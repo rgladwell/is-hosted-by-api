@@ -1,3 +1,5 @@
+import com.typesafe.sbt.SbtStartScript
+
 organization := "gladwell.me"
 
 name := "is-aws-api"
@@ -13,6 +15,4 @@ libraryDependencies ++= Seq(
   "net.databinder" %% "unfiltered-specs2" % "0.8.4" % "test"
 )
 
-resolvers ++= Seq(
-  "java m2" at "http://download.java.net/maven/2"
-)
+seq(SbtStartScript.startScriptForClassesSettings: _*)

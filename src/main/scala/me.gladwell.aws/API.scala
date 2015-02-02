@@ -2,33 +2,21 @@ package me.gladwell.aws
 
 import unfiltered.request._
 import unfiltered.response._
-
-import unfiltered.directives._, Directives._
+import util.Properties
 
 class API extends unfiltered.filter.Plan {
 
-  def intent = Directive.Intent {
-    case GET(_) => success(Ok ~> index())
+  def intent = {
+    case GET(_) => Ok ~> ResponseString("Unfiltered on Heroku!")
   }
 
-  def index() = {
-    Html5(
-     <html>
-      <head>
-        <title>is-aws-api</title>
-      </head>
-      <body>
-       <form method="GET">
-         <input type="submit" />
-       </form>
-     </body>
-    </html>
-   )
-  }
 }
 
 object API {
+
   def main(args: Array[String]) {
-    unfiltered.jetty.Server.local(8080).plan(new API).run()
+    val port = Properties.envOrElse("PORT", "8080").toInt
+    unfiltered.jetty.Http(port).filter(new API).run
   }
+
 }

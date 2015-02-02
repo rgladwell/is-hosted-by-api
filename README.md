@@ -16,6 +16,6 @@ sbt run
 To deploy this application to Heroku, run:
 
 ``` sh
-heroku create
+heroku create -s cedar --buildpack https://github.com/heroku/heroku-buildpack-scala.git
 git push heroku master
 ```
