@@ -16,7 +16,7 @@ object API {
 
   def main(args: Array[String]) {
     val port = Properties.envOrElse("PORT", "8080").toInt
-    unfiltered.jetty.Http(port).filter(new API).run
+    unfiltered.jetty.Http(port).plan(new API).run
   }
 
 }
