@@ -9,6 +9,7 @@ import unfiltered.response._
 import util.Properties
 
 class API extends unfiltered.filter.Plan {
+  this: Configuration =>
 
   def intent = {
     case GET(_) => Ok ~> ResponseString("Unfiltered on Heroku!")
@@ -16,11 +17,10 @@ class API extends unfiltered.filter.Plan {
 
 }
 
-object API {
+object API extends API with HerokuConfiguration with SystemEnvironmentVariables {
 
   def main(args: Array[String]) {
-    val port = Properties.envOrElse("PORT", "8080").toInt
-    unfiltered.jetty.Http(port).plan(new API).run
+    unfiltered.jetty.Http(port).plan(this).run
   }
 
 }

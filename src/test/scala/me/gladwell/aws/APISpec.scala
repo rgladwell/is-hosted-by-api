@@ -12,7 +12,7 @@ object APISpec extends Specification with unfiltered.specs2.jetty.Served {
 
   import dispatch._
 
-  def setup = { _.plan(new API) }
+  def setup = { _.plan(API) }
 
   val http = new Http
 
