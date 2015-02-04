@@ -16,7 +16,8 @@ libraryDependencies ++= Seq(
   "net.databinder" %% "unfiltered-directives" % "0.8.4",
   "net.databinder" %% "unfiltered-filter" % "0.8.4",
   "net.databinder" %% "unfiltered-jetty" % "0.8.4",
-  "net.databinder" %% "unfiltered-specs2" % "0.8.4" % "test"
+  "net.databinder" %% "unfiltered-specs2" % "0.8.4" % "test",
+  "net.databinder" %% "dispatch-tagsoup" % "0.8.10" % "test"
 )
 
 seq(SbtStartScript.startScriptForClassesSettings: _*)

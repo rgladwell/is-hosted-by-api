@@ -5,23 +5,65 @@
 package me.gladwell.aws
 
 import org.specs2.mutable.Specification
-
 import dispatch.classic._
+import org.specs2.matcher.XmlMatchers
 
-object APISpec extends Specification with unfiltered.specs2.jetty.Served {
+object APISpec extends Specification with unfiltered.specs2.jetty.Served with XmlMatchers {
 
   import dispatch._
+  import tagsoup.TagSoupHttp._
 
   def setup = { _.plan(API) }
 
-  val http = new Http
+  def endpoint = url(s"http://localhost:$port")
 
   "The HTTP API" should {
-    "return OK response for index request" in {
-      val status = http x (host as_str) {
+    "return OK response for an index request" in {
+      val status = new Http x (endpoint as_str) {
         case (code, _, _, _) => code
       }
+
       status must_== 200
     }
+
+    "return html response for an index request" in {
+      val contentType = new Http x (endpoint as_str) {
+        case (_, response, _, _) => response.getHeaders("Content-Type")(0).getValue
+      }
+
+      contentType must startWith("text/html")
+    }
+
+    "return a form for an index request" in {
+      val html = new Http x (endpoint as_tagsouped)
+      html must \\("form")
+    }
+
+    "return a form with address field for an index request" in {
+      val html = new Http x (endpoint as_tagsouped)
+      html must \\("input", "name" -> "address")
+    }
+
+    "return OK response for an address lookup" in {
+      val status = new Http x (endpoint / "?address=example.com" as_str) {
+        case (code, _, _, _) => code
+      }
+
+      status must_== 200
+    }
+
+    "return html response for an address lookup" in {
+      val contentType = new Http x (endpoint / "?address=example.com" as_str) {
+        case (_, response, _, _) => response.getHeaders("Content-Type")(0).getValue
+      }
+
+      contentType must startWith("text/html")
+    }
+
+    "return a result for an address lookup" in {
+      val html = new Http x (endpoint / "?address=example.com" as_tagsouped)
+      html must \\("span", "id" -> "is-aws")
+    }
   }
+
 }
