@@ -8,12 +8,12 @@ import org.specs2.mutable.Specification
 import dispatch.classic._
 import org.specs2.matcher.XmlMatchers
 
-object APISpec extends Specification with unfiltered.specs2.jetty.Served with XmlMatchers {
+object ApiSpec extends Specification with unfiltered.specs2.jetty.Served with XmlMatchers {
 
   import dispatch._
   import tagsoup.TagSoupHttp._
 
-  def setup = { _.plan(API) }
+  def setup = { _.plan(Api) }
 
   def endpoint = url(s"http://localhost:$port")
 

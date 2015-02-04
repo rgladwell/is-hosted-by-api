@@ -7,7 +7,7 @@ package me.gladwell.aws
 import unfiltered.request._
 import unfiltered.response._
 
-class API extends unfiltered.filter.Plan {
+class Api extends unfiltered.filter.Plan {
   this: Configuration with Views with Amazon =>
 
   object Address extends Params.Extract("address", Params.first)
@@ -19,7 +19,7 @@ class API extends unfiltered.filter.Plan {
 
 }
 
-object API extends API with HerokuConfiguration
+object Api extends Api with HerokuConfiguration
   with SystemEnvironmentVariables
   with HtmlViews
   with Amazon {
