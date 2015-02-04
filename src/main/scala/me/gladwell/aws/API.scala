@@ -20,7 +20,7 @@ class API extends unfiltered.filter.Plan {
 object API extends API with HerokuConfiguration with SystemEnvironmentVariables {
 
   def main(args: Array[String]) {
-    unfiltered.jetty.Http(port).plan(this).run
+    unfiltered.jetty.Server.http(port).plan(this).run
   }
 
 }
