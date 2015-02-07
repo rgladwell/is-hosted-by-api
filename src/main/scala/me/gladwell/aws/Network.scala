@@ -4,12 +4,14 @@
 
 package me.gladwell.aws
 
-trait Amazon {
+import java.net.InetAddress
 
-  val aws: Aws = new Aws;
+trait Network {
 
-  class Aws {
-    def isHosted(address: String): Boolean = false
+  trait IpPrefix {
+    def inRange(address: InetAddress): Boolean
   }
+
+  val ipRanges: Seq[IpPrefix]
 
 }

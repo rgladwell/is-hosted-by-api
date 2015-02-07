@@ -8,12 +8,16 @@ import unfiltered.request._
 import unfiltered.response._
 
 class Api extends unfiltered.filter.Plan {
-  this: Configuration with Views with Amazon =>
+  this: Views with Network with Dns =>
 
   object Address extends Params.Extract("address", Params.first)
 
   def intent = { 
-    case GET(Path("/") & Params(Address(address))) => Ok ~> resultView(aws.isHosted(address.toString))
+    case GET(Path("/") & Params(Address(address))) =>{
+      val ip = Domain(address).resolve()
+      val result = ipRanges.exists{ prefix => prefix.inRange(ip)}
+      Ok ~> resultView(result)
+    } 
     case GET(Path("/")) => Ok ~> index()
   }
 
@@ -22,7 +26,8 @@ class Api extends unfiltered.filter.Plan {
 object Api extends Api with HerokuConfiguration
   with SystemEnvironmentVariables
   with HtmlViews
-  with Amazon {
+  with AmazonNetwork
+  with Dns {
 
   def main(args: Array[String]) {
     unfiltered.jetty.Server.http(port).plan(this).run

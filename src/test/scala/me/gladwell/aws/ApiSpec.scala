@@ -13,19 +13,19 @@ object ApiSpec extends Specification with unfiltered.specs2.jetty.Served with Xm
   import dispatch._
   import tagsoup.TagSoupHttp._
 
-  def setup = { _.plan(Api) }
+  trait MockNetwork extends Network {
+    override val ipRanges = Seq()
+  }
+
+  object TestApi extends Api
+    with HtmlViews
+    with MockNetwork
+    with Dns {
+  }
+
+  def setup = { _.plan(TestApi) }
 
   def endpoint = url(s"http://localhost:$port")
-
-  def status(request: Request) = new Http x (request as_str) {
-    case (code, _, _, _) => code
-  }
-
-  def contentType(request: Request) = new Http x (request as_str) {
-    case (_, response, _, _) => response.getHeaders("Content-Type")(0).getValue
-  }
-
-  def html(request: Request) = new Http x (request as_tagsouped)
 
   "The HTTP API" should {
     "return OK response for an index request" in {
@@ -56,5 +56,15 @@ object ApiSpec extends Specification with unfiltered.specs2.jetty.Served with Xm
       html(endpoint / "?address=example.com")  must \\("span", "id" -> "is-aws")
     }
   }
+
+  def status(request: Request) = new Http x (request as_str) {
+    case (code, _, _, _) => code
+  }
+
+  def contentType(request: Request) = new Http x (request as_str) {
+    case (_, response, _, _) => response.getHeaders("Content-Type")(0).getValue
+  }
+
+  def html(request: Request) = new Http x (request as_tagsouped)
 
 }

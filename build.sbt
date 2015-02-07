@@ -16,6 +16,8 @@ libraryDependencies ++= Seq(
   "net.databinder" %% "unfiltered-directives" % "0.8.4",
   "net.databinder" %% "unfiltered-filter" % "0.8.4",
   "net.databinder" %% "unfiltered-jetty" % "0.8.4",
+  "org.json4s" %% "json4s-native" % "3.2.11",
+  "commons-net" % "commons-net" % "3.3",
   "net.databinder" %% "unfiltered-specs2" % "0.8.4" % "test",
   "net.databinder" %% "dispatch-tagsoup" % "0.8.10" % "test"
 )

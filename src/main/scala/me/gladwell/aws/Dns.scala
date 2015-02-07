@@ -4,11 +4,12 @@
 
 package me.gladwell.aws
 
-import java.net.URI
+import java.net.InetAddress
 
-trait Configuration {
+trait Dns {
 
-  def port: Int
-  def awsIpRangeLocation: URI
+  case class Domain(name: String) {
+    def resolve() = InetAddress.getByName(name)
+  }
 
 }
