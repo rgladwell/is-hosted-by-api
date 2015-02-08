@@ -27,4 +27,15 @@ trait HtmlViews extends Views {
     </body>
   }
 
+  def errorView(error: Throwable) = Html5 {
+    <head>
+      <title>is-aws-api</title>
+    </head>
+    <body>
+      <div id="error">
+        <p>{error.getMessage}</p>
+      </div>
+    </body>
+  }
+
 }

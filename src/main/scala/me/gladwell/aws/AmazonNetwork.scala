@@ -7,8 +7,9 @@ package me.gladwell.aws
 import java.net.InetAddress
 import scala.io.Source.fromInputStream
 import org.apache.commons.net.util.SubnetUtils
+import org.slf4s.Logging
 
-trait AmazonNetwork extends Network {
+trait AmazonNetwork extends Network with Logging {
   this: Configuration =>
 
   case class CidrNotationIpPrefix(notation: String) extends IpPrefix {
@@ -17,6 +18,8 @@ trait AmazonNetwork extends Network {
   }
 
   override lazy val ipRanges = {
+    log.info(s"downloading Amazon IP ranges from url=[$awsIpRangeLocation]")
+
     import org.json4s._
     import org.json4s.native.JsonMethods._
 

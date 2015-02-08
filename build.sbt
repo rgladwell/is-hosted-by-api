@@ -18,6 +18,8 @@ libraryDependencies ++= Seq(
   "net.databinder" %% "unfiltered-jetty" % "0.8.4",
   "org.json4s" %% "json4s-native" % "3.2.11",
   "commons-net" % "commons-net" % "3.3",
+  "org.slf4s" %% "slf4s-api" % "1.7.7",
+  "ch.qos.logback" % "logback-classic" % "1.1.2",
   "net.databinder" %% "unfiltered-specs2" % "0.8.4" % "test",
   "net.databinder" %% "dispatch-tagsoup" % "0.8.10" % "test"
 )

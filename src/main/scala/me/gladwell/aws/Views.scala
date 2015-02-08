@@ -13,5 +13,6 @@ trait Views {
 
   def index(): View
   def resultView(result: Boolean): View
+  def errorView(error: Throwable): View
 
 }
