@@ -1,7 +1,5 @@
 # Is This Hosted On AWS API [![Build Status](https://travis-ci.org/rgladwell/is-aws-api.svg?branch=master)](https://travis-ci.org/rgladwell/is-aws-api)
 
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy) 
-
 RESTful API that determines if a given server's address/name is hosted on
 Amazon or Amazon Web Services.
 
@@ -10,8 +8,8 @@ variables:
 
 | Environment Variable    | Description
 |-------------------------|-------------
-| `PORT`                  | Port number for API to host off (defaults `8080`) |
-| `AWS_IPRANGE_LOCATION`  | Required URL for the AWS IP ranges (typically https://ip-ranges.amazonaws.com/ip-ranges.json) |
+| `PORT`                  | Port number for API to host off (defaults `8080`). |
+| `AWS_IPRANGE_LOCATION`  | Required URL for the AWS IP ranges (typically https://ip-ranges.amazonaws.com/ip-ranges.json). |
 
 To build and run locally execute:
 
@@ -21,10 +19,12 @@ cd is-aws-api
 sbt run
 ```
 
-To deploy this application to Heroku, run:
+To deploy on a [Dokku](https://github.com/progrium/dokku) instance execute the following:
 
-``` sh
-heroku create -s cedar --buildpack https://github.com/heroku/heroku-buildpack-scala.git
-heroku config:set AWS_IPRANGE_LOCATION=https://ip-ranges.amazonaws.com/ip-ranges.json
-git push heroku master
+```sh
+git remote add dokku dokku@<ADDRESS>:is-aws-api
+git push dokku master
+ssh dokku@<ADDRESS> 'config:set is-aws-api AWS_IPRANGE_LOCATION=https://ip-ranges.amazonaws.com/ip-ranges.json'
 ```
+
+Where `ADDRESS` is the address of hosting your Dokku instance.
