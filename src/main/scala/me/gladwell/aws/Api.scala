@@ -34,16 +34,15 @@ class Api extends unfiltered.filter.Plan with Logging {
 
 }
 
-object Api extends Api with HerokuConfiguration
+object Api extends Api with App
+  with HerokuConfiguration
   with SystemEnvironmentVariables
   with HtmlViews
   with AmazonNetwork
   with Dns
   with Logging {
 
-  def main(args: Array[String]) {
-    log.info("Starting is-aws API version 0.1")
-    unfiltered.jetty.Server.http(port).plan(this).run
-  }
+  log.info("Starting is-aws API version 0.1")
+  unfiltered.jetty.Server.http(port).plan(this).run
 
 }
