@@ -6,19 +6,27 @@ package me.gladwell.aws
 
 import org.specs2.mutable.Specification
 import dispatch.classic._
-import org.specs2.matcher.XmlMatchers
+import unfiltered.response.Html5
+import me.gladwell.aws.test.MockUnfilitered
 
-object ApiSpec extends Specification with unfiltered.specs2.jetty.Served with XmlMatchers {
+object ApiSpec extends Specification with unfiltered.specs2.jetty.Served with MockUnfilitered {
 
   import dispatch._
-  import tagsoup.TagSoupHttp._
+
+  trait MockViews extends Views {
+    override val index = mock[View]
+
+    private val _resultView = mock[View]
+    override def resultView(result: Boolean) = _resultView
+    override def errorView(error: Throwable) = mock[View]
+  }
 
   trait MockNetwork extends Network {
     override val ipRanges = Seq()
   }
 
   object TestApi extends Api
-    with HtmlViews
+    with MockViews
     with MockNetwork
     with Dns {
   }
@@ -29,42 +37,20 @@ object ApiSpec extends Specification with unfiltered.specs2.jetty.Served with Xm
 
   "The HTTP API" should {
     "return OK response for an index request" in {
+      val response = mockResponse()
+      TestApi.index.apply(any) returns Html5 { <p></p> }(response)
       status(endpoint) must_== 200
     }
 
-    "return html response for an index request" in {
-      contentType(endpoint) must startWith("text/html")
-    }
-
-    "return a form for an index request" in {
-      html(endpoint) must \\("form")
-    }
-
-    "return a form with address field for an index request" in {
-      html(endpoint) must \\("input", "name" -> "address")
-    }
-
     "return OK response for an address lookup" in {
+      val response = mockResponse()
+      TestApi.resultView(true).apply(any) returns Html5 { <p></p> }(response)
       status(endpoint / "?address=example.com") must_== 200
-    }
-
-    "return html response for an address lookup" in {
-      contentType(endpoint / "?address=example.com") must startWith("text/html")
-    }
-
-    "return a result for an address lookup" in {
-      html(endpoint / "?address=example.com")  must \\("span", "id" -> "is-aws")
     }
   }
 
   def status(request: Request) = new Http x (request as_str) {
     case (code, _, _, _) => code
   }
-
-  def contentType(request: Request) = new Http x (request as_str) {
-    case (_, response, _, _) => response.getHeaders("Content-Type")(0).getValue
-  }
-
-  def html(request: Request) = new Http x (request as_tagsouped)
 
 }

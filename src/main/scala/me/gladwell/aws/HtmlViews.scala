@@ -1,3 +1,7 @@
+// Copyright 2015 Ricardo Gladwell.
+// Licensed under the GNU Affero General Public License.
+// See the LICENSE file for more information.
+
 package me.gladwell.aws
 
 import unfiltered.response.Html5
@@ -27,7 +31,7 @@ trait HtmlViews extends Views {
     </body>
   }
 
-  def errorView(error: Throwable) = Html5 {
+  override def errorView(error: Throwable) = Html5 {
     <head>
       <title>is-aws-api</title>
     </head>
