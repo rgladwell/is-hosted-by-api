@@ -8,8 +8,8 @@ import java.net.InetAddress
 
 trait Dns {
 
-  case class Domain(name: String) {
-    def resolve() = InetAddress.getByName(name)
-  }
+  type Resolver = (String) => InetAddress
+
+  def resolve: Resolver = { name => InetAddress.getByName(name) }
 
 }
