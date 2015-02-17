@@ -28,7 +28,9 @@ object ApiSpec extends Specification with MockUnfilitered {
 
     override def resultView(result: Boolean) = if(result) hostedView else unhostedView
 
-    override def errorView(error: Throwable) = mock[View]
+    val errorView = mock[View]
+
+    override def errorView(error: Throwable) = errorView
   }
 
   trait MockNetwork extends Network {
@@ -36,7 +38,7 @@ object ApiSpec extends Specification with MockUnfilitered {
       def inRange(address: InetAddress): Boolean = (address == range)
     }
 
-    override val ipRanges = Seq(MockIpPrefix(hostedIpAddress))
+    override val ipRanges = mock[IpRangeLoader]
   }
 
   trait MockDns extends Dns {
@@ -78,6 +80,7 @@ object ApiSpec extends Specification with MockUnfilitered {
       TestApi.unhostedView.apply(any) returns Html5 { <p></p> }(response)
       TestApi.resolve("hosted") returns hostedIpAddress
       TestApi.resolve("unhosted") returns unhostedIpAddress
+      TestApi.ipRanges.apply() returns Seq(TestApi.MockIpPrefix(hostedIpAddress))
 
       status(endpoint / "?address=unhosted") must_== 200
     }
@@ -88,6 +91,7 @@ object ApiSpec extends Specification with MockUnfilitered {
       TestApi.unhostedView.apply(any) returns Html5 { <p></p> }(response)
       TestApi.resolve("hosted") returns hostedIpAddress
       TestApi.resolve("unhosted") returns unhostedIpAddress
+      TestApi.ipRanges.apply() returns Seq(TestApi.MockIpPrefix(hostedIpAddress))
 
       GET(endpoint / "?address=hosted")
 
@@ -100,17 +104,46 @@ object ApiSpec extends Specification with MockUnfilitered {
       TestApi.unhostedView.apply(any) returns Html5 { <p></p> }(response)
       TestApi.resolve("hosted") returns hostedIpAddress
       TestApi.resolve("unhosted") returns unhostedIpAddress
+      TestApi.ipRanges.apply() returns Seq(TestApi.MockIpPrefix(hostedIpAddress))
 
       GET(endpoint / "?address=unhosted")
 
       there was one(TestApi.unhostedView).apply(any)
     }
+
+    "return error view for error on DNS lookup" in new TestApiScope {
+      val response = mockResponse()
+      TestApi.hostedView.apply(any) returns Html5 { <p></p> }(response)
+      TestApi.unhostedView.apply(any) returns Html5 { <p></p> }(response)
+      TestApi.errorView.apply(any) returns Html5 { <p></p> }(response)
+      TestApi.resolve(any) throws new RuntimeException("mock exception")
+      TestApi.ipRanges.apply() returns Seq(TestApi.MockIpPrefix(hostedIpAddress))
+
+      GET(endpoint / "?address=unhosted")
+
+      there was one(TestApi.errorView).apply(any)
+    }
+
+    "return error view for error on aquiring network IP range" in new TestApiScope {
+      val response = mockResponse()
+      TestApi.hostedView.apply(any) returns Html5 { <p></p> }(response)
+      TestApi.unhostedView.apply(any) returns Html5 { <p></p> }(response)
+      TestApi.errorView.apply(any) returns Html5 { <p></p> }(response)
+      TestApi.resolve("hosted") returns hostedIpAddress
+      TestApi.resolve("unhosted") returns unhostedIpAddress
+      TestApi.ipRanges.apply() throws new RuntimeException("mock exception")
+
+      GET(endpoint / "?address=unhosted")
+
+      there was one(TestApi.errorView).apply(any)
+    }
   }
 
-  def GET(request: Request) = Http(request as_str)
+  def GET(request: Request): Unit = status(request)
 
   def status(request: Request) = new Http x (request as_str) {
     case (code, _, _, _) => code
   }
+
 
 }

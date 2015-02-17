@@ -8,6 +8,7 @@ import unfiltered.request._
 import unfiltered.response._
 import org.slf4s.Logging
 import scala.util.{Success, Failure, Try}
+import javax.servlet.http.HttpServletResponse
 
 class Api extends unfiltered.filter.Plan with Logging {
   this: Views with Network with Dns =>
@@ -16,10 +17,11 @@ class Api extends unfiltered.filter.Plan with Logging {
 
   private def inNetwork(address: String) = Try {
     val ip = resolve(address)
-    ipRanges.exists{ prefix => prefix.inRange(ip)}
+    ipRanges().exists{ prefix => prefix.inRange(ip)}
   }
 
   def intent = {
+
     case GET(Path("/") & Params(Address(address))) => {
 
       val result = inNetwork(address)
@@ -36,6 +38,7 @@ class Api extends unfiltered.filter.Plan with Logging {
     }
 
     case GET(Path("/")) => Ok ~> index()
+
   }
 
 }
@@ -45,8 +48,7 @@ object Api extends Api with App
   with SystemEnvironmentVariables
   with HtmlViews
   with AmazonNetwork
-  with Dns
-  with Logging {
+  with Dns {
 
   log.info("Starting is-aws API version 0.1")
   unfiltered.jetty.Server.http(port).plan(this).run

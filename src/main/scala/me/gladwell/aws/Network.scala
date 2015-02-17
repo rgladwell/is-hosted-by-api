@@ -12,6 +12,8 @@ trait Network {
     def inRange(address: InetAddress): Boolean
   }
 
-  val ipRanges: Seq[IpPrefix]
+  type IpRangeLoader = () => Seq[IpPrefix]
+
+  val ipRanges: IpRangeLoader
 
 }
