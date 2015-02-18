@@ -4,7 +4,7 @@
 
 package me.gladwell.aws
 
-import org.specs2.mutable.Specification
+import org.specs2.mutable.{After, Specification}
 import dispatch.classic._
 import unfiltered.response.Html5
 import me.gladwell.aws.test.MockUnfilitered
@@ -47,7 +47,7 @@ object ApiSpec extends Specification with MockUnfilitered {
     override val resolve = mock[Resolver]
   }
 
-  trait ServedScope extends Hosted with Scope {
+  trait ServedScope extends Hosted with Scope with After {
     this: Filter =>
 
     import unfiltered.jetty._
@@ -55,6 +55,11 @@ object ApiSpec extends Specification with MockUnfilitered {
     lazy val server = Server.http(port).plan(this)
 
     server.start()
+    
+    def after = {
+      server.stop()
+      server.destroy()
+    }
   }
 
   trait TestApiScope extends Api
