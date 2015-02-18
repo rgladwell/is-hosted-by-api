@@ -13,6 +13,7 @@ import unfiltered.specs2.jetty.Served
 import org.specs2.specification.Scope
 import unfiltered.specs2.Hosted
 import javax.servlet.Filter
+import scala.util.{Success, Failure}
 
 object ApiSpec extends Specification with MockUnfilitered {
 
@@ -76,9 +77,9 @@ object ApiSpec extends Specification with MockUnfilitered {
       val response = mockResponse()
       hostedView.apply(any) returns Html5 { <p></p> }(response)
       unhostedView.apply(any) returns Html5 { <p></p> }(response)
-      resolve("hosted") returns hostedIpAddress
-      resolve("unhosted") returns unhostedIpAddress
-      ipRanges.apply() returns Seq(MockIpPrefix(hostedIpAddress))
+      resolve("hosted") returns Success(hostedIpAddress)
+      resolve("unhosted") returns Success(unhostedIpAddress)
+      ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
 
       status(endpoint / "?address=unhosted") must_== 200
     }
@@ -87,9 +88,9 @@ object ApiSpec extends Specification with MockUnfilitered {
       val response = mockResponse()
       hostedView.apply(any) returns Html5 { <p></p> }(response)
       unhostedView.apply(any) returns Html5 { <p></p> }(response)
-      resolve("hosted") returns hostedIpAddress
-      resolve("unhosted") returns unhostedIpAddress
-      ipRanges.apply() returns Seq(MockIpPrefix(hostedIpAddress))
+      resolve("hosted") returns Success(hostedIpAddress)
+      resolve("unhosted") returns Success(unhostedIpAddress)
+      ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
 
       GET(endpoint / "?address=hosted")
 
@@ -100,9 +101,9 @@ object ApiSpec extends Specification with MockUnfilitered {
       val response = mockResponse()
       hostedView.apply(any) returns Html5 { <p></p> }(response)
       unhostedView.apply(any) returns Html5 { <p></p> }(response)
-      resolve("hosted") returns hostedIpAddress
-      resolve("unhosted") returns unhostedIpAddress
-      ipRanges.apply() returns Seq(MockIpPrefix(hostedIpAddress))
+      resolve("hosted") returns Success(hostedIpAddress)
+      resolve("unhosted") returns Success(unhostedIpAddress)
+      ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
 
       GET(endpoint / "?address=unhosted")
 
@@ -114,8 +115,8 @@ object ApiSpec extends Specification with MockUnfilitered {
       hostedView.apply(any) returns Html5 { <p></p> }(response)
       unhostedView.apply(any) returns Html5 { <p></p> }(response)
       errorView.apply(any) returns Html5 { <p></p> }(response)
-      resolve(any) throws new RuntimeException("mock exception")
-      ipRanges.apply() returns Seq(MockIpPrefix(hostedIpAddress))
+      resolve(any) returns Failure(new RuntimeException("mock exception"))
+      ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
 
       GET(endpoint / "?address=unhosted")
 
@@ -127,9 +128,9 @@ object ApiSpec extends Specification with MockUnfilitered {
       hostedView.apply(any) returns Html5 { <p></p> }(response)
       unhostedView.apply(any) returns Html5 { <p></p> }(response)
       errorView.apply(any) returns Html5 { <p></p> }(response)
-      resolve("hosted") returns hostedIpAddress
-      resolve("unhosted") returns unhostedIpAddress
-      ipRanges.apply() throws new RuntimeException("mock exception")
+      resolve("hosted") returns Success(hostedIpAddress)
+      resolve("unhosted") returns Success(unhostedIpAddress)
+      ipRanges.apply() returns Failure(new RuntimeException("mock exception"))
 
       GET(endpoint / "?address=unhosted")
 

@@ -5,11 +5,12 @@
 package me.gladwell.aws
 
 import java.net.InetAddress
+import scala.util.Try
 
 trait Dns {
 
-  type Resolver = (String) => InetAddress
+  type Resolver = (String) => Try[InetAddress]
 
-  def resolve: Resolver = { name => InetAddress.getByName(name) }
+  def resolve: Resolver = { name => Try { InetAddress.getByName(name) } }
 
 }

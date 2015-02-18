@@ -20,7 +20,7 @@ object AmazonNetworkSpec extends Specification {
 
   "AmazonNetwork" should {
     "load IP ranges from a URL" in new AmazonNetworkTestScope {
-      ipRanges() must contain (CidrNotationIpPrefix("50.19.0.0/16"))
+      ipRanges().get must contain (CidrNotationIpPrefix("50.19.0.0/16"))
     }
   }
 

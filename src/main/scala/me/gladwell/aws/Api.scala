@@ -15,25 +15,23 @@ class Api extends unfiltered.filter.Plan with Logging {
 
   object Address extends Params.Extract("address", Params.first)
 
-  private def inNetwork(address: String) = Try {
-    val ip = resolve(address)
-    ipRanges().exists{ prefix => prefix.inRange(ip)}
+  private def inNetwork(address: String) = {
+    val result = for {
+      ip <- resolve(address)
+      ranges <- ipRanges()
+    } yield ranges.exists{ prefix => prefix.inRange(ip) }
+
+    log.info(s"[$address] is in network=[$result]")
+
+    result
   }
 
   def intent = {
 
     case GET(Path("/") & Params(Address(address))) => {
-
-      val result = inNetwork(address)
-
-      log.info(s"[$address] is in network=[$result]")
-
-      result match {
+      inNetwork(address) match {
         case Success(result) => Ok ~> resultView(result)
-        case Failure(error) => {
-          log.error("error matching address to AWS network", error)
-          InternalServerError ~> errorView(error)
-        }
+        case Failure(error) => errorHandler(error)
       }
     }
 
@@ -41,6 +39,10 @@ class Api extends unfiltered.filter.Plan with Logging {
 
   }
 
+  def errorHandler(error: Throwable) = {
+    log.error("error matching address to AWS network", error)
+    InternalServerError ~> errorView(error)
+  }
 }
 
 object Api extends Api with App

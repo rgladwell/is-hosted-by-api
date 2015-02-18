@@ -5,6 +5,7 @@
 package me.gladwell.aws
 
 import java.net.InetAddress
+import scala.util.Try
 
 trait Network {
 
@@ -12,7 +13,7 @@ trait Network {
     def inRange(address: InetAddress): Boolean
   }
 
-  type IpRangeLoader = () => Seq[IpPrefix]
+  type IpRangeLoader = () => Try[Seq[IpPrefix]]
 
   val ipRanges: IpRangeLoader
 
