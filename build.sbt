@@ -20,6 +20,7 @@ libraryDependencies ++= Seq(
   "commons-net" % "commons-net" % "3.3",
   "org.slf4s" %% "slf4s-api" % "1.7.7",
   "ch.qos.logback" % "logback-classic" % "1.1.2",
+  "io.mth" %% "unfiltered-cors" % "0.3",
   "net.databinder" %% "unfiltered-specs2" % "0.8.4" % "test",
   "net.databinder" %% "dispatch-tagsoup" % "0.8.10" % "test"
 )

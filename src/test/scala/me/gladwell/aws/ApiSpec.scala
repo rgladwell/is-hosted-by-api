@@ -104,6 +104,19 @@ object ApiSpec extends Specification with Mockito with XmlMatchers {
 
        html(body(endpoint / "?address=unhosted")) must \\("div", "id" -> "error")
     }
+
+    "allow cross-origin requests for an index request" in new TestApiScope {
+      headers(endpoint <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "http://localhost")
+    }
+
+    "allow cross-origin requests for an address lookup" in new TestApiScope {
+      resolve("hosted") returns Success(hostedIpAddress)
+      resolve("unhosted") returns Success(unhostedIpAddress)
+      ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
+
+      headers(endpoint / "?address=unhosted" <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "http://localhost")
+    }
+
   }
 
   def GET(request: Request): Unit = status(request)
@@ -122,6 +135,13 @@ object ApiSpec extends Specification with Mockito with XmlMatchers {
   def html(content: String) = {
     val parser = XML.withSAXParser(new SAXFactoryImpl().newSAXParser())
     parser.loadString(content)
+  }
+
+  def headers(request: Request) = new Http x (request as_str) {
+    case (_, response, _, _) => {
+      val headers = response.getAllHeaders.toList
+      (headers.map { header => (header.getName, header.getValue) }).toMap
+    }
   }
 
 }
