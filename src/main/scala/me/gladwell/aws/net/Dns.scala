@@ -2,7 +2,7 @@
 // Licensed under the GNU Affero General Public License.
 // See the LICENSE file for more information.
 
-package me.gladwell.aws
+package me.gladwell.aws.net
 
 import java.net.InetAddress
 import scala.util.Try

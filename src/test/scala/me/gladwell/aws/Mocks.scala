@@ -5,6 +5,7 @@
 package me.gladwell.aws
 
 import org.specs2.mock.Mockito
+import me.gladwell.aws.net.Dns
 
 trait Mocks extends Mockito {
 

@@ -18,6 +18,9 @@ import org.specs2.matcher.XmlMatchers
 import scala.xml.XML
 import org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl
 import java.net.URLEncoder
+import me.gladwell.aws.test.TestConfiguration
+import me.gladwell.aws.test.MockHtmlViews
+import me.gladwell.aws.net.Network
 
 object ApiSpec extends Specification with Mocks with XmlMatchers {
 
@@ -50,9 +53,10 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
   }
 
   trait TestApiScope extends Api
-    with HtmlViews
+    with MockHtmlViews
     with MockNetwork
     with MockDns
+    with TestConfiguration
     with ServedScope {
 
     def endpoint = url(s"http://localhost:$port")

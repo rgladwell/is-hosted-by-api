@@ -12,7 +12,7 @@ trait Views {
   type View = ResponseFunction[HttpServletResponse]
 
   def index(): View
-  def resultView(result: Boolean): View
+  def resultView(result: NetworkLookup): View
   def errorView(error: Throwable): View
 
 }

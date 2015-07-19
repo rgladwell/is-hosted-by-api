@@ -4,12 +4,4 @@
 
 package me.gladwell.aws
 
-import java.net.URI
-
-trait Configuration {
-
-  def hostPort: Int
-  def awsIpRangeLocation: URI
-  def assetsLocation: URI
-
-}
+case class NetworkLookup(hosted: Boolean, host: String, query: String)

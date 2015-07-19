@@ -9,6 +9,8 @@ import scala.io.Source.fromInputStream
 import org.apache.commons.net.util.SubnetUtils
 import org.slf4s.Logging
 import scala.util.Try
+import me.gladwell.aws.net.Network
+import me.gladwell.aws.net.Dns
 
 trait AmazonNetwork extends Network with Logging {
   this: Configuration with Dns =>

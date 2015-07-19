@@ -2,9 +2,11 @@
 // Licensed under the GNU Affero General Public License.
 // See the LICENSE file for more information.
 
-package me.gladwell.aws
+package me.gladwell.aws.net
 
 import org.specs2.mutable.Specification
+import me.gladwell.aws.net._
+import java.net.URI
 
 object UriSpec extends Specification {
   
@@ -22,6 +24,9 @@ object UriSpec extends Specification {
       Uri.unapply("192.173.55.87") must beNone
     }
 
+    "correctly concatenate with another URI" in {
+      new URI("http://example.org") + "/index.html" must_== new URI("http://example.org/index.html")
+    }
   }
 
 }
