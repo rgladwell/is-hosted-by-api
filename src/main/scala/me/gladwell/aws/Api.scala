@@ -9,9 +9,8 @@ import unfiltered.response._
 import org.slf4s.Logging
 import scala.util.{Success, Failure, Try}
 import javax.servlet.http.HttpServletResponse
-import io.mth.unfiltered.cors._
 
-class Api extends unfiltered.filter.Plan with Logging {
+class Api extends unfiltered.filter.Plan with Cors with Logging {
   this: Views with Network with Dns =>
 
   object Address extends Params.Extract("address", Params.first)
@@ -26,17 +25,6 @@ class Api extends unfiltered.filter.Plan with Logging {
 
     result
   }
-
-  val cors = Cors(
-    CorsConfig(
-      (_: String) => true,
-      (_: String) => true,
-      (_: List[String]) => true,
-      true,
-      Some(120),
-      Nil
-    )
-  )
 
   def intent = cors {
 
