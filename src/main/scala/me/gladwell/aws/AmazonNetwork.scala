@@ -11,7 +11,7 @@ import org.slf4s.Logging
 import scala.util.Try
 
 trait AmazonNetwork extends Network with Logging {
-  this: Configuration =>
+  this: Configuration with Dns =>
 
   case class CidrNotationIpPrefix(notation: String) extends IpPrefix {
     private val subnet = new SubnetUtils(notation)

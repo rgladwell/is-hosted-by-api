@@ -15,17 +15,6 @@ class Api extends unfiltered.filter.Plan with Cors with Logging {
 
   object Address extends Params.Extract("address", Params.first)
 
-  private def inNetwork(address: String) = {
-    val result = for {
-      ip <- resolve(address)
-      ranges <- ipRanges()
-    } yield ranges.exists{ prefix => prefix.inRange(ip) }
-
-    log.info(s"[$address] is in network=[$result]")
-
-    result
-  }
-
   def intent = cors {
 
     case GET(Path("/") & Params(Address(address))) => {

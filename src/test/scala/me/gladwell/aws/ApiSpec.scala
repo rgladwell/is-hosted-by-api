@@ -25,16 +25,16 @@ object ApiSpec extends Specification with Mockito with XmlMatchers {
   val hostedIpAddress =  mock[InetAddress]
   val unhostedIpAddress =  mock[InetAddress]
 
-  trait MockNetwork extends Network {
+  trait MockDns extends Dns {
+    override val resolve = mock[Resolver]
+  }
+
+  trait MockNetwork extends Network with MockDns {
     case class MockIpPrefix(range: InetAddress) extends IpPrefix {
       def inRange(address: InetAddress): Boolean = (address == range)
     }
 
     override val ipRanges = mock[IpRangeLoader]
-  }
-
-  trait MockDns extends Dns {
-    override val resolve = mock[Resolver]
   }
 
   trait ServedScope extends Hosted with Scope with After {
