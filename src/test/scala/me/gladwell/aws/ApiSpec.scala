@@ -17,6 +17,7 @@ import scala.io.Source
 import org.specs2.matcher.XmlMatchers
 import scala.xml.XML
 import org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl
+import java.net.URLEncoder
 
 object ApiSpec extends Specification with Mocks with XmlMatchers {
 
@@ -56,8 +57,10 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
 
     def endpoint = url(s"http://localhost:$port")
 
+    resolve(anyString) returns Failure(new RuntimeException("mock exception"))
     resolve("hosted") returns Success(hostedIpAddress)
     resolve("unhosted") returns Success(unhostedIpAddress)
+
     ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
   }
 
@@ -92,9 +95,7 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
       }
 
       "return error view for error on DNS lookup" in new TestApiScope {
-        resolve(any) returns Failure(new RuntimeException("mock exception"))
-  
-         html(body(endpoint / "?address=unhosted")) must \\("div", "id" -> "error")
+         html(body(endpoint / "?address=error")) must \\("div", "id" -> "error")
       }
 
       "return error view for error on aquiring network IP range" in new TestApiScope {
@@ -105,6 +106,11 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
 
       "allow cross-origin requests for an address lookup" in new TestApiScope {  
         headers(endpoint / "?address=unhosted" <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "http://localhost")
+      }
+
+      "handle URLs" in new TestApiScope {
+        val encoded = URLEncoder.encode("http://hosted:8080/path?name=value", "UTF-8");
+        html(body(endpoint / s"?address=$encoded")) must \\("span", "id" -> "is-aws") \> "true"
       }
     }
 

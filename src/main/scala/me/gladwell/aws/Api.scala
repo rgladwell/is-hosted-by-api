@@ -18,14 +18,20 @@ class Api extends unfiltered.filter.Plan with Cors with Logging {
   def intent = cors {
 
     case GET(Path("/") & Params(Address(address))) => {
-      inNetwork(address) match {
-        case Success(result) => Ok ~> resultView(result)
-        case Failure(error) => errorHandler(error)
+      address match {
+        case Uri(host) => lookup(host)
+        case _         => lookup(address)
       }
     }
 
     case GET(Path("/")) => Ok ~> index()
+  }
 
+  def lookup(host: String) = {
+    inNetwork(host) match {
+      case Success(result) => Ok ~> resultView(result)
+      case Failure(error) => errorHandler(error)
+    }
   }
 
   def errorHandler(error: Throwable) = {
