@@ -8,13 +8,8 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import java.net.URI
 import java.net.InetAddress.getByName
-import org.specs2.mock.Mockito
 
-object AmazonNetworkSpec extends Specification with Mockito {
-
-  trait MockDns extends Dns {
-    override val resolve = mock[Resolver]
-  }
+object AmazonNetworkSpec extends Specification with Mocks {
 
   trait TestIpRangeLocation extends Configuration {
     override def port = ???

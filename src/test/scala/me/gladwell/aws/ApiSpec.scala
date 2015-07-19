@@ -18,16 +18,12 @@ import org.specs2.matcher.XmlMatchers
 import scala.xml.XML
 import org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl
 
-object ApiSpec extends Specification with Mockito with XmlMatchers {
+object ApiSpec extends Specification with Mocks with XmlMatchers {
 
   import dispatch._
 
   val hostedIpAddress =  mock[InetAddress]
   val unhostedIpAddress =  mock[InetAddress]
-
-  trait MockDns extends Dns {
-    override val resolve = mock[Resolver]
-  }
 
   trait MockNetwork extends Network with MockDns {
     case class MockIpPrefix(range: InetAddress) extends IpPrefix {
@@ -59,62 +55,57 @@ object ApiSpec extends Specification with Mockito with XmlMatchers {
     with ServedScope {
 
     def endpoint = url(s"http://localhost:$port")
+
+    resolve("hosted") returns Success(hostedIpAddress)
+    resolve("unhosted") returns Success(unhostedIpAddress)
+    ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
   }
 
-  "The HTTP API" should {
-    "return OK response for an index request" in new TestApiScope {
-      status(endpoint) must_== 200
+  "The HTTP API index endpoint" should {
+    "on GET request" in {
+
+      "return OK response" in new TestApiScope {
+        status(endpoint) must_== 200
+      }
+
+      "allow cross-origin requests for an index request" in new TestApiScope {
+        headers(endpoint <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "http://localhost")
+      }
+
     }
+  }
 
-    "return OK response for an address lookup" in new TestApiScope {
-      resolve("hosted") returns Success(hostedIpAddress)
-      resolve("unhosted") returns Success(unhostedIpAddress)
-      ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
+  "The HTTP API address lookup endpoint" should {
 
-      status(endpoint / "?address=unhosted") must_== 200
-    }
+    "on network lookup" in {
 
-    "return hosted view for hosted address" in new TestApiScope {
-      resolve("hosted") returns Success(hostedIpAddress)
-      resolve("unhosted") returns Success(unhostedIpAddress)
-      ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
+      "return OK response" in new TestApiScope {
+        status(endpoint / "?address=unhosted") must_== 200
+      }
 
-      html(body(endpoint / "?address=hosted")) must \\("span", "id" -> "is-aws") \> "true"
-    }
+      "return hosted view for hosted address" in new TestApiScope {
+        html(body(endpoint / "?address=hosted")) must \\("span", "id" -> "is-aws") \> "true"
+      }
 
-    "return unhosted view for unhosted address" in new TestApiScope {
-      resolve("hosted") returns Success(hostedIpAddress)
-      resolve("unhosted") returns Success(unhostedIpAddress)
-      ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
+      "return unhosted view for unhosted address" in new TestApiScope {
+        html(body(endpoint / "?address=unhosted")) must \\("span", "id" -> "is-aws") \> "false"
+      }
 
-      html(body(endpoint / "?address=unhosted")) must \\("span", "id" -> "is-aws") \> "false"
-    }
+      "return error view for error on DNS lookup" in new TestApiScope {
+        resolve(any) returns Failure(new RuntimeException("mock exception"))
+  
+         html(body(endpoint / "?address=unhosted")) must \\("div", "id" -> "error")
+      }
 
-    "return error view for error on DNS lookup" in new TestApiScope {
-      resolve(any) returns Failure(new RuntimeException("mock exception"))
-      ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
+      "return error view for error on aquiring network IP range" in new TestApiScope {
+        ipRanges.apply() returns Failure(new RuntimeException("mock exception"))
+  
+         html(body(endpoint / "?address=unhosted")) must \\("div", "id" -> "error")
+      }
 
-       html(body(endpoint / "?address=unhosted")) must \\("div", "id" -> "error")
-    }
-
-    "return error view for error on aquiring network IP range" in new TestApiScope {
-      resolve("hosted") returns Success(hostedIpAddress)
-      resolve("unhosted") returns Success(unhostedIpAddress)
-      ipRanges.apply() returns Failure(new RuntimeException("mock exception"))
-
-       html(body(endpoint / "?address=unhosted")) must \\("div", "id" -> "error")
-    }
-
-    "allow cross-origin requests for an index request" in new TestApiScope {
-      headers(endpoint <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "http://localhost")
-    }
-
-    "allow cross-origin requests for an address lookup" in new TestApiScope {
-      resolve("hosted") returns Success(hostedIpAddress)
-      resolve("unhosted") returns Success(unhostedIpAddress)
-      ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
-
-      headers(endpoint / "?address=unhosted" <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "http://localhost")
+      "allow cross-origin requests for an address lookup" in new TestApiScope {  
+        headers(endpoint / "?address=unhosted" <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "http://localhost")
+      }
     }
 
   }
