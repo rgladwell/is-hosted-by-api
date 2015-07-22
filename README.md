@@ -3,6 +3,10 @@
 RESTful API that determines if a given server's address/name is hosted on
 Amazon or Amazon Web Services.
 
+Requirements:
+
+  * [SBT](http://www.scala-sbt.org/release/tutorial/Setup.html).
+
 Before you start, you should configure some or all of the following environment
 variables:
 
