@@ -29,6 +29,7 @@ To deploy on a [Dokku](https://github.com/progrium/dokku) instance execute the f
 git remote add dokku dokku@<ADDRESS>:is-aws-api
 git push dokku master
 ssh dokku@<ADDRESS> 'config:set is-aws-api AWS_IPRANGE_LOCATION=https://ip-ranges.amazonaws.com/ip-ranges.json'
+ssh dokku@46.101.18.84 'domains:add is-aws-api test.is-aws.com'
 ```
 
 Where `ADDRESS` is the address of hosting your Dokku instance.
