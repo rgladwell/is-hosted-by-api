@@ -12,8 +12,9 @@ import me.gladwell.aws.net._
 trait HtmlViews extends Views {
   this: Configuration =>
 
-  val webcomponentsScript = assetsLocation + "/vendor/webcomponentsjs/webcomponents-lite.min.js"
-  val components = assetsLocation + "/assets.html"
+  val webcomponentsScript   = assetsLocation + "/vendor/webcomponentsjs/webcomponents-lite.min.js"
+  val components            = assetsLocation + "/assets.html"
+  val favicon               = assetsLocation + "/images/icon-fav.png"
 
   private def html5Template(title: String, body : NodeSeq, format: String) = Html5 {
     <html lang="en">
@@ -25,6 +26,7 @@ trait HtmlViews extends Views {
 
         <script src={webcomponentsScript.toString} async="async" ></script>
         <link rel="import" href={components.toString} />
+        <link rel="shortcut icon" href={favicon.toString} />
       </head>
 
       <body>
