@@ -1,1 +1,10 @@
 language: scala
+
+env:
+  - AWS_IPRANGE_LOCATION=https://ip-ranges.amazonaws.com/ip-ranges.json IS_AWS_ASSETS_LOCATION=http://is-aws-assets.divshot.io
+
+script:
+  - sbt test
+  - sbt run &> /dev/null & 
+  - cd load-test
+  - sbt test

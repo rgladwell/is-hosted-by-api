@@ -16,6 +16,8 @@ variables:
 | `AWS_IPRANGE_LOCATION`   | Required URL for the AWS IP ranges (typically https://ip-ranges.amazonaws.com/ip-ranges.json). |
 | `IS_AWS_ASSETS_LOCATION` | Required URL for the HTML assets (e.g. CSS, scripts etc). |
 
+## Building
+
 To build and run locally execute:
 
 ``` sh
@@ -23,6 +25,23 @@ git clone https://github.com/rgladwell/is-aws-api.git
 cd is-aws-api
 sbt run
 ```
+
+## Testing
+
+To run the unit tests:
+
+``` sh
+sbt test
+```
+
+To run the load tests:
+
+``` sh
+cd load-test
+sbt test
+```
+
+## Deployment
 
 To deploy on a [Dokku](https://github.com/progrium/dokku) instance execute the following:
 
