@@ -10,7 +10,7 @@ name := "is-aws-api"
 
 version := "1.0.0-SNAPSHOT"
 
-scalaVersion := "2.11.3"
+scalaVersion := "2.11.6"
 
 libraryDependencies ++= Seq(
   "net.databinder" %% "unfiltered-directives" % "0.8.4",
@@ -26,3 +26,5 @@ libraryDependencies ++= Seq(
 )
 
 seq(SbtStartScript.startScriptForClassesSettings: _*)
+
+scalacOptions += "-feature"
