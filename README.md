@@ -1,4 +1,4 @@
-# Is This Hosted On AWS API [![Build Status](https://travis-ci.org/is-aws/is-aws-api.svg?branch=master)](https://travis-ci.org/is-aws/is-aws-api)
+# Is This Hosted On AWS API [![Build Status](https://travis-ci.org/is-aws/is-aws-api.svg?branch=master)](https://travis-ci.org/is-aws/is-aws-api) [![Codacy Badge](https://www.codacy.com/project/badge/431145a2eba44687b04d6b9ce2b1328c)](https://www.codacy.com/app/ricardo_3/is-aws-api)
 
 RESTful Hypermedia API that determines if a given server's address/name is hosted on
 Amazon or Amazon Web Services.
