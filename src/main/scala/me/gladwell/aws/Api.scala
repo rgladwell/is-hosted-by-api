@@ -6,19 +6,21 @@ package me.gladwell.aws
 
 import unfiltered.request._
 import unfiltered.response._
+import unfiltered.netty._
+import scala.concurrent._
+import me.gladwell.aws.net._
 import org.slf4s.Logging
-import scala.util.{Success, Failure, Try}
-import javax.servlet.http.HttpServletResponse
-import me.gladwell.aws.net.Uri
-import me.gladwell.aws.net.Network
-import me.gladwell.aws.net.Dns
+import io.netty.channel.ChannelHandler.Sharable
 
-class Api extends unfiltered.filter.Plan with Cors with Logging {
+@Sharable
+class Api extends unfiltered.netty.future.Plan with Logging with ServerErrorResponse {
   this: Views with Network with Dns =>
+
+  implicit def executionContext = ExecutionContext.Implicits.global
 
   object Address extends Params.Extract("address", Params.first)
 
-  def intent = cors {
+  def intent = {
 
     case GET(Path("/") & Params(Address(address))) => {
       address match {
@@ -27,17 +29,20 @@ class Api extends unfiltered.filter.Plan with Cors with Logging {
       }
     }
 
-    case GET(Path("/")) => Ok ~> index()
+    case GET(Path("/")) => Future{ Ok ~> index() }
+
   }
 
-  def lookup(host: String, query: String) = {
-    inNetwork(host) match {
-      case Success(result) => Ok ~> resultView(NetworkLookup(result, host, query))
-      case Failure(error) => errorHandler(error)
+  private def lookup(host: String, query: String) = {
+    inNetwork(host) map { result =>
+      log.info(s"[$host] is in network=[$result]")
+      Ok ~> resultView(NetworkLookup(result, host, query))
+    } recover {
+      case error: Exception => errorHandler(error)
     }
   }
 
-  def errorHandler(error: Throwable) = {
+  private def errorHandler(error: Throwable) = {
     log.error("error matching address to AWS network", error)
     InternalServerError ~> errorView(error)
   }
@@ -48,9 +53,10 @@ object Api extends Api with App
   with SystemEnvironmentVariables
   with HtmlViews
   with AmazonNetwork
-  with Dns {
+  with Dns
+  with Cors {
 
   log.info("Starting is-aws API version 0.1")
-  unfiltered.jetty.Server.http(hostPort).plan(this).run
+  unfiltered.netty.Server.http(hostPort).handler(cors).plan(this).run
 
 }

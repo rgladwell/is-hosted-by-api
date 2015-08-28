@@ -5,29 +5,25 @@
 package me.gladwell.aws.net
 
 import java.net.InetAddress
-import scala.util.Try
-import org.slf4s.Logging
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-trait Network extends Logging {
+trait Network {
   this: Dns =>
 
   trait IpPrefix {
     def inRange(address: InetAddress): Boolean
   }
 
-  type IpRangeLoader = () => Try[Seq[IpPrefix]]
+  type IpRangeLoader = () => Future[Seq[IpPrefix]]
 
   val ipRanges: IpRangeLoader
 
   def inNetwork(address: String) = {
-    val result = for {
+    for {
       ip <- resolve(address)
       ranges <- ipRanges()
     } yield ranges.exists{ prefix => prefix.inRange(ip) }
-
-    log.info(s"[$address] is in network=[$result]")
-
-    result
   }
 
 }

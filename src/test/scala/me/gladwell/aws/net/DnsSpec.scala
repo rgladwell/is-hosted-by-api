@@ -6,21 +6,22 @@ package me.gladwell.aws.net
 
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import scala.util.Success
 import java.net.InetAddress.getLoopbackAddress
+import org.specs2.matcher.FutureMatchers
+import me.gladwell.aws.test.Eventually
 
-object DnsSpec extends Specification {
+object DnsSpec extends Specification with FutureMatchers with Eventually {
 
-  "Dns" should {
+  "DNS" should {
 
     trait TestDns extends Dns with Scope
 
-    "resolve DNS names" in new TestDns {
-      resolve("localhost") must beSuccessfulTry.withValue(getLoopbackAddress)
+    "resolve domain names" in new TestDns {
+      resolve("localhost") must beEqualTo(getLoopbackAddress).await
     }
 
-    "fail on non-existent DNS" in new TestDns {
-      resolve("non-existent") must beFailedTry
+    "fail on non-existent domain names" in new TestDns {
+      resolve("non-existent").eventually must throwA[Exception]
     }
 
   }

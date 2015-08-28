@@ -7,11 +7,10 @@ package me.gladwell.aws
 import org.specs2.mutable.{After, Specification}
 import dispatch.classic._
 import java.net.InetAddress
-import unfiltered.specs2.jetty.Served
+import unfiltered.specs2.netty.Served
 import org.specs2.specification.Scope
 import unfiltered.specs2.Hosted
 import javax.servlet.Filter
-import scala.util.{Success, Failure}
 import org.specs2.mock.Mockito
 import scala.io.Source
 import org.specs2.matcher.XmlMatchers
@@ -21,6 +20,8 @@ import java.net.URLEncoder
 import me.gladwell.aws.test.TestConfiguration
 import me.gladwell.aws.test.MockHtmlViews
 import me.gladwell.aws.net.Network
+import scala.concurrent.Future
+import io.netty.channel.ChannelHandler
 
 object ApiSpec extends Specification with Mocks with XmlMatchers {
 
@@ -37,15 +38,15 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
     override val ipRanges = mock[IpRangeLoader]
   }
 
-  trait ServedScope extends Hosted with Scope with After {
-    this: Filter =>
+  trait ServedScope extends Hosted with Scope with Cors with After {
+    this: ChannelHandler =>
 
-    import unfiltered.jetty._
+    import unfiltered.netty._
 
-    lazy val server = Server.http(port).plan(this)
+    lazy val server = Server.http(port).handler(cors).handler(this)
 
     server.start()
-    
+
     def after = {
       server.stop()
       server.destroy()
@@ -61,11 +62,11 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
 
     def endpoint = url(s"http://localhost:$port")
 
-    resolve(anyString) returns Failure(new RuntimeException("mock exception"))
-    resolve("hosted") returns Success(hostedIpAddress)
-    resolve("unhosted") returns Success(unhostedIpAddress)
+    resolve(anyString) returns Future{ throw new RuntimeException("mock exception") }
+    resolve("hosted") returns Future{ hostedIpAddress }
+    resolve("unhosted") returns Future{ unhostedIpAddress }
 
-    ipRanges.apply() returns Success(Seq(MockIpPrefix(hostedIpAddress)))
+    ipRanges.apply() returns Future{ Seq(MockIpPrefix(hostedIpAddress)) }
   }
 
   "The HTTP API index endpoint" should {
@@ -75,8 +76,8 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
         status(endpoint) must_== 200
       }
 
-      "allow cross-origin requests for an index request" in new TestApiScope {
-        headers(endpoint <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "http://localhost")
+      "allow cross-origin requests" in new TestApiScope {
+        headers(endpoint <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "*")
       }
 
     }
@@ -103,13 +104,13 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
       }
 
       "return error view for error on aquiring network IP range" in new TestApiScope {
-        ipRanges.apply() returns Failure(new RuntimeException("mock exception"))
+        ipRanges.apply() returns Future{ throw new RuntimeException("mock exception") }
   
          html(body(endpoint / "?address=unhosted")) must \\("div", "id" -> "error")
       }
 
-      "allow cross-origin requests for an address lookup" in new TestApiScope {  
-        headers(endpoint / "?address=unhosted" <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "http://localhost")
+      "allow cross-origin requests" in new TestApiScope {  
+        headers(endpoint / "?address=unhosted" <:< Map("Origin" -> "http://localhost")) must havePair("Access-Control-Allow-Origin" -> "*")
       }
 
       "handle URLs" in new TestApiScope {

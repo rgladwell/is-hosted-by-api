@@ -4,19 +4,14 @@
 
 package me.gladwell.aws
 
+import io.netty.handler.codec.http.cors.CorsHandler
+import io.netty.handler.codec.http.cors.CorsConfig.withAnyOrigin
+import io.netty.channel.ChannelHandler.Sharable
+
 trait Cors {
 
-  import io.mth.unfiltered.cors._
+  @Sharable class ApiCorsHandler extends CorsHandler(withAnyOrigin().build())
 
-  val cors = Cors(
-    CorsConfig(
-      (_: String) => true,
-      (_: String) => true,
-      (_: List[String]) => true,
-      true,
-      Some(120),
-      Nil
-    )
-  )
+  val cors = new ApiCorsHandler
 
 }

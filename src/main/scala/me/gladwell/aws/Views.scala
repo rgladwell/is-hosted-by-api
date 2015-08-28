@@ -5,11 +5,11 @@
 package me.gladwell.aws
 
 import unfiltered.response.ResponseFunction
-import javax.servlet.http.HttpServletResponse
+import io.netty.handler.codec.http.HttpResponse
 
 trait Views {
 
-  type View = ResponseFunction[HttpServletResponse]
+  type View = ResponseFunction[HttpResponse]
 
   def index(): View
   def resultView(result: NetworkLookup): View

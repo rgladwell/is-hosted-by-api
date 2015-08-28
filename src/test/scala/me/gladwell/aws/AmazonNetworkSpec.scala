@@ -6,34 +6,34 @@ package me.gladwell.aws
 
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import java.net.URI
 import java.net.InetAddress.getByName
 import me.gladwell.aws.test.TestConfiguration
-import scala.util.{Failure, Success}
+import org.specs2.matcher.FutureMatchers
+import scala.concurrent.Future
+import me.gladwell.aws.test.Eventually
 
-object AmazonNetworkSpec extends Specification with Mocks {
+object AmazonNetworkSpec extends Specification with Mocks with FutureMatchers with Eventually {
 
   class AmazonNetworkTestScope extends AmazonNetwork with MockDns with TestConfiguration with Scope
 
   "AmazonNetwork" should {
     "load IP ranges from a URL" in new AmazonNetworkTestScope {
-      ipRanges().get must contain (CidrNotationIpPrefix("50.19.0.0/16"))
+      ipRanges() must contain (CidrNotationIpPrefix("50.19.0.0/16")).await
     }
 
     "correctly verify IP is in network ranges" in new AmazonNetworkTestScope {
-      resolve("hosted") returns Success(getByName("54.239.98.1"))
-      inNetwork("hosted") must_== Success(true)
+      resolve("hosted") returns Future{ getByName("54.239.98.1") }
+      inNetwork("hosted") must beTrue.await
     }
 
     "correctly verify IP is not in network ranges" in new AmazonNetworkTestScope {
-      resolve("unhosted") returns Success(getByName("127.0.0.1"))
-      inNetwork("unhosted") must_== Success(false)
+      resolve("unhosted") returns Future{ getByName("127.0.0.1") }
+      inNetwork("unhosted") must beFalse.await
     }
 
     "fail on network errors" in new AmazonNetworkTestScope {
-      val exception = new Exception
-      resolve("error") returns Failure(exception)
-      inNetwork("error") must_== Failure(exception)
+      resolve("error") returns Future{ throw new Exception }
+      inNetwork("error").eventually must throwA[Exception]
     }
   }
 

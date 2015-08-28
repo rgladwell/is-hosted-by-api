@@ -5,12 +5,13 @@
 package me.gladwell.aws.net
 
 import java.net.InetAddress
-import scala.util.Try
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait Dns {
 
-  type Resolver = (String) => Try[InetAddress]
+  type Resolver = (String) => Future[InetAddress]
 
-  def resolve: Resolver = { name => Try { InetAddress.getByName(name) } }
+  def resolve: Resolver = { name => Future { InetAddress.getByName(name) } }
 
 }

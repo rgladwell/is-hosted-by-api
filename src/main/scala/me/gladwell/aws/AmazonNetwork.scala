@@ -8,9 +8,9 @@ import java.net.InetAddress
 import scala.io.Source.fromInputStream
 import org.apache.commons.net.util.SubnetUtils
 import org.slf4s.Logging
-import scala.util.Try
-import me.gladwell.aws.net.Network
-import me.gladwell.aws.net.Dns
+import me.gladwell.aws.net._
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait AmazonNetwork extends Network with Logging {
   this: Configuration with Dns =>
@@ -21,7 +21,7 @@ trait AmazonNetwork extends Network with Logging {
   }
 
   override val ipRanges = { () =>
-    Try {
+    Future {
       log.info(s"downloading Amazon IP ranges from url=[$awsIpRangeLocation]")
   
       import org.json4s._
