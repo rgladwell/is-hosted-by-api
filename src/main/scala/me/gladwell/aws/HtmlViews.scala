@@ -16,7 +16,7 @@ trait HtmlViews extends Views {
   val components            = assetsLocation + "/assets.html"
   val favicon               = assetsLocation + "/images/icon-fav.png"
 
-  private def html5Template(title: String, body : NodeSeq, format: String) = Html5 {
+  private def html5Template(title: String, body: NodeSeq, format: String) = Html5 {
     <html lang="en">
       <head>
         <meta charset="utf-8" />
@@ -60,7 +60,13 @@ trait HtmlViews extends Views {
     )
   }
 
-  override def resultView(result: NetworkLookup) = {
+  private def addresssForm: NodeSeq = {
+    <form method="get" action="./" data-rel="next">
+      <input type="text" name="address" placeholder="Address, host or URL (i.e. cnn.com)" />
+    </form>
+  }
+
+  override def resultView(query: String, result: NetworkLookup) = {
 
     val yesno = if(result.hosted) "Yes" else "No"
     val not = if(result.hosted) "" else " not"
@@ -72,20 +78,28 @@ trait HtmlViews extends Views {
         <data class="p-host">{result.host}</data>
         is{not} hosted by Amazon.
       </h1>
-
+      ++ {validationMessage(result.validation)} ++
       <form method="get" action="./" data-rel="next">
-        <input type="text" name="address" placeholder="Address, host or URL (i.e. cnn.com)" value={result.query} />
+        <input type="text" name="address" placeholder="Address, host or URL (i.e. cnn.com)" value={query} />
       </form>,
       format = "h-network-lookup"
     )
   }
 
-  override def errorView(error: Throwable) = {
+  override def errorView(error: Exception) = {
     html5Template(
       title = "Is this hosted on Amazon? - Error",
-      <h1>{error.getMessage}</h1>,
+      <h1>There was a problem looking up your address, please try again later.</h1>,
       format = "h-error"
     )
+  }
+
+  private def validationMessage(validation: Option[InvalidInput]): NodeSeq = {
+    validation match {
+      case Some(v)  => <h2 class="p-invalid-input" title={v.id}>{v.message}</h2>
+      case None     => NodeSeq.Empty
+    }
+    
   }
 
 }

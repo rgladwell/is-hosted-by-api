@@ -7,6 +7,7 @@ package me.gladwell.aws.test
 import unfiltered.response.Html5
 import me.gladwell.aws.Views
 import me.gladwell.aws.NetworkLookup
+import me.gladwell.aws.InvalidInput
 
 trait MockHtmlViews extends Views {
 
@@ -22,18 +23,19 @@ trait MockHtmlViews extends Views {
    </body>
   }
 
-  override def resultView(result: NetworkLookup) = Html5 {
+  override def resultView(query: String, result: NetworkLookup) = Html5 {
     <head>
       <title>is-aws-api</title>
     </head>
     <body>
       <div id="result">
         <p><span id="is-aws">{result.hosted}</span></p>
+        {validationMessage(result.validation)}
       </div>
     </body>
   }
 
-  override def errorView(error: Throwable) = Html5 {
+  override def errorView(error: Exception) = Html5 {
     <head>
       <title>is-aws-api</title>
     </head>
@@ -42,6 +44,13 @@ trait MockHtmlViews extends Views {
         <p>{error.getMessage}</p>
       </div>
     </body>
+  }
+
+  private def validationMessage(error: Option[InvalidInput]) = {
+    error match {
+      case Some(invalid)  => <p class={invalid.id}>{invalid.message}</p>
+      case None           => <p></p>
+    }
   }
 
 }

@@ -19,7 +19,7 @@ trait Network {
 
   val ipRanges: IpRangeLoader
 
-  def inNetwork(address: String) = {
+  def inNetwork(address: String) : Future[Boolean] = {
     for {
       ip <- resolve(address)
       ranges <- ipRanges()

@@ -4,4 +4,4 @@
 
 package me.gladwell.aws
 
-case class NetworkLookup(hosted: Boolean, host: String, query: String)
+case class NetworkLookup(host: String, hosted: Boolean = false, validation: Option[InvalidInput] = None)

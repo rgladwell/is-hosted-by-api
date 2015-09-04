@@ -55,52 +55,62 @@ object HtmlViewsSpec extends Specification with XmlMatchers with MockUnfilitered
 
   "The result view" should {
 
-    val lookup = NetworkLookup(true, "example.org", "http://example.org")
+    val lookup = NetworkLookup("example.org", true)
 
     "be HTML" in new TestHtmlViews {
       val response = mockResponse()
-      resultView(lookup)(response)
+      resultView("http://example.org", lookup)(response)
       there was one(response).header("Content-Type", "text/html; charset=utf-8")
     }
 
     "return a result" in new TestHtmlViews {
-      html(resultView(lookup)) must \\ ("div", "class" -> "h-network-lookup")
+      html(resultView("http://example.org", lookup)) must \\ ("div", "class" -> "h-network-lookup")
     }
 
     "return whether address is hosted on network" in new TestHtmlViews {
-      html(resultView(lookup)) must \\ ("data", "class" -> "p-is-hosted", "value" -> "true")
+      html(resultView("http://example.org", lookup)) must \\ ("data", "class" -> "p-is-hosted", "value" -> "true")
     }
 
     "return host looked up" in new TestHtmlViews {
-      html(resultView(lookup)) must \\ ("data", "class" -> "p-host") \> "example.org"
+      html(resultView("http://example.org", lookup)) must \\ ("data", "class" -> "p-host") \> "example.org"
     }
 
     "return link to remote hosted assets" in new TestHtmlViews {
-      html(resultView(lookup)) must \\("link", "href" -> "http://example.org/assets.html")
+      html(resultView("http://example.org", lookup)) must \\("link", "href" -> "http://example.org/assets.html")
     }
 
     "return form for new lookups" in new TestHtmlViews {
-      html(resultView(lookup)) must \\("form", "data-rel" -> "next")
+      html(resultView("http://example.org", lookup)) must \\("form", "data-rel" -> "next")
     }
 
     "return form with pre-populated input field" in new TestHtmlViews {
-      html(resultView(lookup)) must \\("input", "name" -> "address", "value" -> "http://example.org")
+      html(resultView("http://example.org", lookup)) must \\("input", "name" -> "address", "value" -> "http://example.org")
+    }
+
+    "classify validation errors" in new TestHtmlViews {
+      val result = resultView("http://example.org", NetworkLookup("http://example.org", validation = Some(NoSuchDomainName)))
+      html(result) must \\("h2", "title" -> NoSuchDomainName.id, "class" -> "p-invalid-input")
+    }
+
+    "return form with pre-populated input field on validation error" in new TestHtmlViews {
+      val result = resultView("http://example.org", NetworkLookup("http://example.org", validation = Some(NoSuchDomainName)))
+      html(result) must \\("input", "name" -> "address", "value" -> "http://example.org")
     }
   }
 
   "The error view" should {
     "be HTML" in new TestHtmlViews {
       val response = mockResponse()
-      errorView(new Exception())(response)
+      errorView(new Exception(""))(response)
       there was one(response).header("Content-Type", "text/html; charset=utf-8")
     }
 
     "return an error message" in new TestHtmlViews {
-      html(errorView(new Exception("MESSAGE"))) must \\("div", "class" -> "h-error") \ ("h1") \> "MESSAGE"
+      html(errorView(new Exception(""))) must \\("div", "class" -> "h-error")
     }
 
     "return link to remote hosted assets" in new TestHtmlViews {
-      html(errorView(new Exception("MESSAGE"))) must \\("link", "href" -> "http://example.org/assets.html")
+      html(errorView(new Exception(""))) must \\("link", "href" -> "http://example.org/assets.html")
     }
   }
 

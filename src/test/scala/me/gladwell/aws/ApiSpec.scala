@@ -22,6 +22,7 @@ import me.gladwell.aws.test.MockHtmlViews
 import me.gladwell.aws.net.Network
 import scala.concurrent.Future
 import io.netty.channel.ChannelHandler
+import java.net.UnknownHostException
 
 object ApiSpec extends Specification with Mocks with XmlMatchers {
 
@@ -65,6 +66,7 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
     resolve(anyString) returns Future{ throw new RuntimeException("mock exception") }
     resolve("hosted") returns Future{ hostedIpAddress }
     resolve("unhosted") returns Future{ unhostedIpAddress }
+    resolve("unknown") returns Future{ throw new UnknownHostException("mock exception") }
 
     ipRanges.apply() returns Future{ Seq(MockIpPrefix(hostedIpAddress)) }
   }
@@ -99,13 +101,17 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
         html(body(endpoint / "?address=unhosted")) must \\("span", "id" -> "is-aws") \> "false"
       }
 
+      "return error for error on DNS lookup" in new TestApiScope {
+        status(endpoint / "?address=error") must_== 500
+      }
+
       "return error view for error on DNS lookup" in new TestApiScope {
          html(body(endpoint / "?address=error")) must \\("div", "id" -> "error")
       }
 
       "return error view for error on aquiring network IP range" in new TestApiScope {
         ipRanges.apply() returns Future{ throw new RuntimeException("mock exception") }
-  
+
          html(body(endpoint / "?address=unhosted")) must \\("div", "id" -> "error")
       }
 
@@ -117,6 +123,19 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
         val encoded = URLEncoder.encode("http://hosted:8080/path?name=value", "UTF-8");
         html(body(endpoint / s"?address=$encoded")) must \\("span", "id" -> "is-aws") \> "true"
       }
+
+      "return not found for unknown DNS lookup" in new TestApiScope {
+        status(endpoint / "?address=unknown") must_== 404
+      }
+
+      "return DNS record does not exist validation message for non-existant DNS record" in new TestApiScope {
+        html(body(endpoint / "?address=unknown")) must \\ ("p", "class" -> "dns-does-not-exist")
+      }
+
+      "return query result for non-existant DNS record" in new TestApiScope {
+        html(body(endpoint / s"?address=unknown")) must \\("span", "id" -> "is-aws") \> "false"
+      }
+
     }
 
   }

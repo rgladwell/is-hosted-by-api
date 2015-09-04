@@ -11,6 +11,7 @@ import scala.concurrent._
 import me.gladwell.aws.net._
 import org.slf4s.Logging
 import io.netty.channel.ChannelHandler.Sharable
+import java.net.UnknownHostException
 
 @Sharable
 class Api extends unfiltered.netty.future.Plan with Logging with ServerErrorResponse {
@@ -36,16 +37,13 @@ class Api extends unfiltered.netty.future.Plan with Logging with ServerErrorResp
   private def lookup(host: String, query: String) = {
     inNetwork(host) map { result =>
       log.info(s"[$host] is in network=[$result]")
-      Ok ~> resultView(NetworkLookup(result, host, query))
+      Ok ~> resultView(query, NetworkLookup(host, result))
     } recover {
-      case error: Exception => errorHandler(error)
+      case unknown : UnknownHostException  => NotFound             ~> resultView(query, NetworkLookup(host, validation = Some(NoSuchDomainName)))
+      case error   : Exception             => InternalServerError  ~> errorView(error)
     }
   }
 
-  private def errorHandler(error: Throwable) = {
-    log.error("error matching address to AWS network", error)
-    InternalServerError ~> errorView(error)
-  }
 }
 
 object Api extends Api with App
