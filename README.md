@@ -15,6 +15,7 @@ variables:
 | `PORT`                   | Port number for API to host off (defaults `8080`). |
 | `AWS_IPRANGE_LOCATION`   | Required URL for the AWS IP ranges (typically https://ip-ranges.amazonaws.com/ip-ranges.json). |
 | `IS_AWS_ASSETS_LOCATION` | Required URL for the HTML assets (e.g. CSS, scripts etc). |
+| `IPRANGES_LOCATION`      | Required URL for the general IP ranges (typically https://ip-ranges.is-hosted-by.com/). |
 
 ## Building
 
@@ -50,6 +51,7 @@ git remote add dokku dokku@<ADDRESS>:is-aws-api
 git push dokku master
 ssh dokku@<ADDRESS> 'config:set is-aws-api AWS_IPRANGE_LOCATION=https://ip-ranges.amazonaws.com/ip-ranges.json'
 ssh dokku@<ADDRESS> 'config:set is-aws-api IS_AWS_ASSETS_LOCATION=http://is-aws-assets.divshot.io'
+ssh dokku@<ADDRESS> 'config:set is-aws-api IPRANGES_LOCATION=https://ip-ranges.is-hosted-by.com/'
 ssh dokku@46.101.18.84 'domains:add is-aws-api test.is-aws.com'
 ```
 

@@ -55,7 +55,7 @@ object HtmlViewsSpec extends Specification with XmlMatchers with MockUnfilitered
 
   "The result view" should {
 
-    val lookup = NetworkLookup("example.org", true)
+    val lookup = NetworkLookup("example.org", Some("Amazon"), true)
 
     "be HTML" in new TestHtmlViews {
       val response = mockResponse()
@@ -69,6 +69,10 @@ object HtmlViewsSpec extends Specification with XmlMatchers with MockUnfilitered
 
     "return whether address is hosted on network" in new TestHtmlViews {
       html(resultView("http://example.org", lookup)) must \\ ("data", "class" -> "p-is-hosted", "value" -> "true")
+    }
+
+    "return hosted network" in new TestHtmlViews {
+      html(resultView("http://example.org", lookup)) must \\ ("data", "class" -> "p-network")  \> "Amazon"
     }
 
     "return host looked up" in new TestHtmlViews {

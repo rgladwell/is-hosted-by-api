@@ -12,10 +12,11 @@ import me.gladwell.aws.net._
 import org.slf4s.Logging
 import io.netty.channel.ChannelHandler.Sharable
 import java.net.UnknownHostException
+import me.gladwell.futures._
 
 @Sharable
 class Api extends unfiltered.netty.future.Plan with Logging with ServerErrorResponse {
-  this: Views with Network with Dns =>
+  this: Views with Networks =>
 
   implicit def executionContext = ExecutionContext.Implicits.global
 
@@ -35,13 +36,23 @@ class Api extends unfiltered.netty.future.Plan with Logging with ServerErrorResp
   }
 
   private def lookup(host: String, query: String) = {
-    inNetwork(host) map { result =>
-      log.info(s"[$host] is in network=[$result]")
-      Ok ~> resultView(query, NetworkLookup(host, result))
-    } recover {
+    val future = networks()
+                  .flatMap { _.map { n => n.inNetwork(host).map((_,n.name)) }.findWithFailure(_._1) }
+                  .map{ t => NetworkLookup(host, t.map(_._2), t.map(_._1).getOrElse(false)) }
+                  .map { result =>
+                    log.info(s"[$host] is in network=[$result]")
+                    Ok ~> resultView(query, result)
+                  }
+
+    future onFailure {
+      case error : Exception =>log.error(s"Failed to perform network lookup for host=[$host", error)
+    }
+
+    future recover {
       case unknown : UnknownHostException  => NotFound             ~> resultView(query, NetworkLookup(host, validation = Some(NoSuchDomainName)))
       case error   : Exception             => InternalServerError  ~> errorView(error)
     }
+
   }
 
 }
@@ -51,7 +62,8 @@ object Api extends Api with App
   with SystemEnvironmentVariables
   with HtmlViews
   with AmazonNetwork
-  with Dns
+  with MicrodataNetworks
+  with MicrodataNetworkParser
   with Cors {
 
   log.info("Starting is-aws API version 0.1")

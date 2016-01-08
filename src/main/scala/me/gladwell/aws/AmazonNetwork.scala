@@ -4,40 +4,44 @@
 
 package me.gladwell.aws
 
+import scala.concurrent._
 import java.net.InetAddress
 import scala.io.Source.fromInputStream
-import org.apache.commons.net.util.SubnetUtils
 import org.slf4s.Logging
 import me.gladwell.aws.net._
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
-trait AmazonNetwork extends Network with Logging {
-  this: Configuration with Dns =>
+trait AmazonNetwork extends Networks with Logging {
+  this: Configuration =>
 
-  case class CidrNotationIpPrefix(notation: String) extends IpPrefix {
-    private val subnet = new SubnetUtils(notation)
-    override def inRange(ip: InetAddress) = subnet.getInfo.isInRange(ip.getHostAddress)
-  }
-
-  override val ipRanges = { () =>
+  private def amazon()(implicit executor: ExecutionContext) = {
     Future {
       log.info(s"downloading Amazon IP ranges from url=[$awsIpRangeLocation]")
-  
+
       import org.json4s._
       import org.json4s.native.JsonMethods._
-  
-      // TODO use caching HTTP client to load IP ranges
+
       val json = parse(fromInputStream(awsIpRangeLocation.toURL.openStream).mkString)
-  
-      for {
-        JArray(prefixes) <- json
-        JObject(prefix) <- prefixes
-        JField("ip_prefix", JString(cidr)) <- prefix
-      } yield {
-        CidrNotationIpPrefix(cidr)
+
+      new Network() with Dns {
+        override val name = "Amazon"
+
+        override val ipRanges = {
+          for {
+            JArray(prefixes) <- json
+            JObject(prefix) <- prefixes
+            JField("ip_prefix", JString(cidr)) <- prefix
+          } yield {
+            CidrNotationIpPrefix(cidr)
+          }
+        }
       }
     }
   }
+
+  override def networks()(implicit executor: ExecutionContext) =
+    for {
+      ns <- super.networks()
+      a <- amazon()
+    } yield(ns.+:(a))
 
 }

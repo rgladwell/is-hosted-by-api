@@ -38,6 +38,14 @@ object HerokuConfigurationSpec extends Specification {
     "throw exception when IS_AWS_ASSETS_LOCATION envvar unset" in new MockEnvironmentVariables {
       assetsLocation must throwA[RuntimeException]
     }
+
+    "return URL from the IPRANGES_LOCATION envvar" in new MockEnvironmentVariables(Map("IPRANGES_LOCATION" -> "http://ip-range.example.com")) {
+      ipRangeLocation must_== new URI("http://ip-range.example.com")
+    }
+
+    "throw exception when IPRANGES_LOCATION envvar unset" in new MockEnvironmentVariables {
+      ipRangeLocation must throwA[RuntimeException]
+    }
   }
 
 }

@@ -1,7 +1,7 @@
 language: scala
 
 env:
-  - AWS_IPRANGE_LOCATION=https://ip-ranges.amazonaws.com/ip-ranges.json IS_AWS_ASSETS_LOCATION=http://is-aws-assets.divshot.io
+  - AWS_IPRANGE_LOCATION=https://ip-ranges.amazonaws.com/ip-ranges.json IS_AWS_ASSETS_LOCATION=http://is-aws-assets.divshot.io IPRANGES_LOCATION=https://ip-ranges.is-hosted-by.com/
 
 script:
   - sbt test

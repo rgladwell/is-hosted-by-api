@@ -30,6 +30,7 @@ trait MockHtmlViews extends Views {
     <body>
       <div id="result">
         <p><span id="is-aws">{result.hosted}</span></p>
+        <p><span id="network-name">{result.network.getOrElse("")}</span></p>
         {validationMessage(result.validation)}
       </div>
     </body>

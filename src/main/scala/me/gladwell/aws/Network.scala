@@ -2,28 +2,25 @@
 // Licensed under the GNU Affero General Public License.
 // See the LICENSE file for more information.
 
-package me.gladwell.aws.net
+package me.gladwell.aws
 
 import java.net.InetAddress
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import me.gladwell.aws.net.Dns
+import me.gladwell.aws.net.IpPrefix
 
 trait Network {
   this: Dns =>
 
-  trait IpPrefix {
-    def inRange(address: InetAddress): Boolean
-  }
+  val ipRanges: Seq[IpPrefix]
 
-  type IpRangeLoader = () => Future[Seq[IpPrefix]]
-
-  val ipRanges: IpRangeLoader
+  val name: String
 
   def inNetwork(address: String) : Future[Boolean] = {
     for {
       ip <- resolve(address)
-      ranges <- ipRanges()
-    } yield ranges.exists{ prefix => prefix.inRange(ip) }
+    } yield ipRanges.exists{ prefix => prefix.inRange(ip) }
   }
 
 }

@@ -4,13 +4,10 @@
 
 package me.gladwell.aws
 
-import java.net.URI
+import java.io.InputStream
 
-trait Configuration {
+trait NetworkParser {
 
-  def hostPort: Int
-  def awsIpRangeLocation: URI
-  def assetsLocation: URI
-  def ipRangeLocation: URI
+  def parseNetwork(input: InputStream): Either[Exception, Seq[Network]]
 
 }

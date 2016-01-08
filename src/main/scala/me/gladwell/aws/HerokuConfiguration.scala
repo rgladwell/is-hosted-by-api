@@ -13,5 +13,6 @@ trait HerokuConfiguration extends Configuration {
   override def hostPort = environmentVariables.get("PORT").getOrElse("8080").toInt
   override def awsIpRangeLocation: URI = new URI(environmentVariables.get("AWS_IPRANGE_LOCATION").get)
   override def assetsLocation: URI = new URI(environmentVariables.get("IS_AWS_ASSETS_LOCATION").get)
+  override def ipRangeLocation: URI = new URI(environmentVariables.get("IPRANGES_LOCATION").get)
 
 }

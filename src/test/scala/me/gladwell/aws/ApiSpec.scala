@@ -19,10 +19,11 @@ import org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl
 import java.net.URLEncoder
 import me.gladwell.aws.test.TestConfiguration
 import me.gladwell.aws.test.MockHtmlViews
-import me.gladwell.aws.net.Network
 import scala.concurrent.Future
 import io.netty.channel.ChannelHandler
 import java.net.UnknownHostException
+import me.gladwell.aws.net.IpPrefix
+import scala.concurrent.ExecutionContext
 
 object ApiSpec extends Specification with Mocks with XmlMatchers {
 
@@ -31,12 +32,30 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
   val hostedIpAddress =  mock[InetAddress]
   val unhostedIpAddress =  mock[InetAddress]
 
-  trait MockNetwork extends Network with MockDns {
-    case class MockIpPrefix(range: InetAddress) extends IpPrefix {
-      def inRange(address: InetAddress): Boolean = (address == range)
+  trait MockNetworks extends Networks {
+
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    val networksMock = mock[() => Future[Seq[Network]]]
+    override def networks()(implicit executor: ExecutionContext) = networksMock()
+
+    networksMock() returns Future(Seq(mockNetwork))
+
+    object mockNetwork extends Network with MockDns {
+      case class MockIpPrefix(range: InetAddress) extends IpPrefix {
+        def inRange(address: InetAddress): Boolean = (address == range)
+      }
+
+      override val name = "mock-network"
+
+      override val ipRanges = Seq(MockIpPrefix(hostedIpAddress))
+
+      resolve(anyString) returns Future{ throw new RuntimeException("mock exception") }
+      resolve("hosted") returns Future{ hostedIpAddress }
+      resolve("unhosted") returns Future{ unhostedIpAddress }
+      resolve("unknown") returns Future{ throw new UnknownHostException("mock exception") }
     }
 
-    override val ipRanges = mock[IpRangeLoader]
   }
 
   trait ServedScope extends Hosted with Scope with Cors with After {
@@ -56,19 +75,11 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
 
   trait TestApiScope extends Api
     with MockHtmlViews
-    with MockNetwork
-    with MockDns
+    with MockNetworks
     with TestConfiguration
     with ServedScope {
 
     def endpoint = url(s"http://localhost:$port")
-
-    resolve(anyString) returns Future{ throw new RuntimeException("mock exception") }
-    resolve("hosted") returns Future{ hostedIpAddress }
-    resolve("unhosted") returns Future{ unhostedIpAddress }
-    resolve("unknown") returns Future{ throw new UnknownHostException("mock exception") }
-
-    ipRanges.apply() returns Future{ Seq(MockIpPrefix(hostedIpAddress)) }
   }
 
   "The HTTP API index endpoint" should {
@@ -97,6 +108,10 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
         html(body(endpoint / "?address=hosted")) must \\("span", "id" -> "is-aws") \> "true"
       }
 
+      "return network name for hosted address" in new TestApiScope {
+        html(body(endpoint / "?address=hosted")) must \\("span", "id" -> "network-name") \> "mock-network"
+      }
+
       "return unhosted view for unhosted address" in new TestApiScope {
         html(body(endpoint / "?address=unhosted")) must \\("span", "id" -> "is-aws") \> "false"
       }
@@ -110,8 +125,7 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
       }
 
       "return error view for error on aquiring network IP range" in new TestApiScope {
-        ipRanges.apply() returns Future{ throw new RuntimeException("mock exception") }
-
+         networksMock() returns Future{ throw new RuntimeException("mock exception") }
          html(body(endpoint / "?address=unhosted")) must \\("div", "id" -> "error")
       }
 
@@ -136,6 +150,22 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
         html(body(endpoint / s"?address=unknown")) must \\("span", "id" -> "is-aws") \> "false"
       }
 
+      object negativeMockNetwork extends Network with MockDns {
+        case class FailingMockIpPrefix() extends IpPrefix {
+          def inRange(address: InetAddress): Boolean = false
+        }
+
+        override val ipRanges = Seq(FailingMockIpPrefix())
+        override val name = "FailingMock Network"
+
+        resolve("hosted") returns Future{ hostedIpAddress }
+      }
+
+      "return success if only last result is positive" in new TestApiScope {
+        networksMock() returns Future{ Seq( negativeMockNetwork, mockNetwork ) }
+        html(body(endpoint / "?address=hosted")) must \\("span", "id" -> "is-aws") \> "true"
+      }
+
     }
 
   }
@@ -152,7 +182,7 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
       Source.fromInputStream(content).getLines().mkString("\n")
     }
   }
- 
+
   def html(content: String) = {
     val parser = XML.withSAXParser(new SAXFactoryImpl().newSAXParser())
     parser.loadString(content)

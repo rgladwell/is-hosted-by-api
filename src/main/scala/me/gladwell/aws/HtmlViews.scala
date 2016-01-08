@@ -76,7 +76,7 @@ trait HtmlViews extends Views {
       <h1>
         <data class="p-is-hosted" value={result.hosted.toString}>{yesno}</data>,
         <data class="p-host">{result.host}</data>
-        is{not} hosted by Amazon.
+        is{not} hosted by <data class="p-network">{result.network.getOrElse("any network")}</data>.
       </h1>
       ++ {validationMessage(result.validation)} ++
       <form method="get" action="./" data-rel="next">

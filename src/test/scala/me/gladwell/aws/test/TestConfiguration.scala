@@ -11,4 +11,5 @@ trait TestConfiguration extends Configuration {
   override def hostPort = ???
   override def awsIpRangeLocation = getClass.getResource("/aws-ip-ranges.json").toURI
   override def assetsLocation = new URI("http://example.org")
+  override def ipRangeLocation: URI = getClass.getResource("/microdata-networks.html").toURI
 }
