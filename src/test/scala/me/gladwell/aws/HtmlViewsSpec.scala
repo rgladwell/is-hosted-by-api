@@ -51,6 +51,10 @@ object HtmlViewsSpec extends Specification with XmlMatchers with MockUnfilitered
     "return link to remote hosted assets" in new TestHtmlViews {
       html(index) must \\("link", "href" -> "http://example.org/assets.html")
     }
+
+    "return link to style-sheet" in new TestHtmlViews {
+      html(index) must \\("link", "href" -> "http://example.org/style.min.css")
+    }
   }
 
   "The result view" should {
@@ -100,6 +104,10 @@ object HtmlViewsSpec extends Specification with XmlMatchers with MockUnfilitered
       val result = resultView("http://example.org", NetworkLookup("http://example.org", validation = Some(NoSuchDomainName)))
       html(result) must \\("input", "name" -> "address", "value" -> "http://example.org")
     }
+
+    "return link to style-sheet" in new TestHtmlViews {
+      html(index) must \\("link", "href" -> "http://example.org/style.min.css")
+    }
   }
 
   "The error view" should {
@@ -115,6 +123,10 @@ object HtmlViewsSpec extends Specification with XmlMatchers with MockUnfilitered
 
     "return link to remote hosted assets" in new TestHtmlViews {
       html(errorView(new Exception(""))) must \\("link", "href" -> "http://example.org/assets.html")
+    }
+
+    "return link to style-sheet" in new TestHtmlViews {
+      html(index) must \\("link", "href" -> "http://example.org/style.min.css")
     }
   }
 

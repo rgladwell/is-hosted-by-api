@@ -15,6 +15,7 @@ trait HtmlViews extends Views {
   val webcomponentsScript   = assetsLocation + "/vendor/webcomponentsjs/webcomponents-lite.min.js"
   val components            = assetsLocation + "/assets.html"
   val favicon               = assetsLocation + "/images/icon-fav.png"
+  val stylesheet            = assetsLocation + "/style.min.css"
 
   private def html5Template(title: String, body: NodeSeq, format: String) = Html5 {
     <html lang="en">
@@ -25,6 +26,7 @@ trait HtmlViews extends Views {
         <title>{title}</title>
 
         <script src={webcomponentsScript.toString} async="async" ></script>
+        <link rel="stylesheet" href={stylesheet.toString} />
         <link rel="import" href={components.toString} />
         <link rel="shortcut icon" href={favicon.toString} />
       </head>
