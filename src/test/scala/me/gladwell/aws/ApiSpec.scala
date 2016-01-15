@@ -50,10 +50,10 @@ object ApiSpec extends Specification with Mocks with XmlMatchers {
 
       override val ipRanges = Seq(MockIpPrefix(hostedIpAddress))
 
-      resolve(anyString) returns Future{ throw new RuntimeException("mock exception") }
+      resolve(anyString) returns Future{ throw new RuntimeException("malformed input") }
       resolve("hosted") returns Future{ hostedIpAddress }
       resolve("unhosted") returns Future{ unhostedIpAddress }
-      resolve("unknown") returns Future{ throw new UnknownHostException("mock exception") }
+      resolve("unknown") returns Future{ throw new UnknownHostException("unknown host") }
     }
 
   }

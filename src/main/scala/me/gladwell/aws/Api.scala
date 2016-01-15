@@ -13,6 +13,7 @@ import org.slf4s.Logging
 import io.netty.channel.ChannelHandler.Sharable
 import java.net.UnknownHostException
 import me.gladwell.futures._
+import urimplicit._
 
 @Sharable
 class Api extends unfiltered.netty.future.Plan with Logging with ServerErrorResponse {
@@ -26,8 +27,8 @@ class Api extends unfiltered.netty.future.Plan with Logging with ServerErrorResp
 
     case GET(Path("/") & Params(Address(address))) => {
       address match {
-        case Uri(host) => lookup(host, address)
-        case _         => lookup(address, address)
+        case Uri(_, host) => lookup(host, address)
+        case _            => lookup(address, address)
       }
     }
 
