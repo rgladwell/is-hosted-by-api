@@ -11,13 +11,10 @@ import org.slf4s.Logging
 trait MicrodataNetworks extends Networks with Logging {
   this: Configuration with NetworkParser =>
 
-  private def microdataNetworks()(implicit executor: ExecutionContext): Future[Seq[Network]] =
-    Future {
-      log.info(s"downloading microdata IP ranges from url=[$ipRangeLocation]")
-
-      val networks = parseNetwork(ipRangeLocation.toURL.openStream)
-      networks.right.get
-    }
+  private def microdataNetworks()(implicit executor: ExecutionContext): Future[Seq[Network]] = {
+    log.info(s"downloading microdata IP ranges from url=[$ipRangeLocation]")
+    parseNetwork(ipRangeLocation.toURL.openStream)
+  }
 
   override def networks()(implicit executor: ExecutionContext) =
     for {

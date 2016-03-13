@@ -10,8 +10,10 @@ import me.gladwell.aws.net.CidrNotationIpPrefix
 import me.gladwell.aws.net.IpRangePrefix
 import java.io.ByteArrayInputStream
 import java.net.InetAddress.getByName
+import scala.concurrent.duration._
+import java.util.concurrent.TimeUnit
 
-object MicrodataNetworkParserSpec extends Specification with MicrodataNetworkParser {
+object MicrodataNetworkParserSpec extends Specification with MicrodataNetworkParser with FutureMatchers {
 
   "NetworkMicrodataParser should" >> {
 
@@ -110,56 +112,52 @@ object MicrodataNetworkParserSpec extends Specification with MicrodataNetworkPar
           </article>
         </main>"""
 
-      "return success" >> {
-        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must beRight
-      }
-
       "parse name" >> {
-        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must beRight(contain{ (network: Network) =>
+        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must contain{ (network: Network) =>
           network.name must_== "Digital Ocean"
-        })
+        }.await(1, FiniteDuration(2, TimeUnit.SECONDS))
       }
 
       "parse CIDR range" >> {
-        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must beRight(contain{ (network: Network) =>
+        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must contain{ (network: Network) =>
           network.ipRanges must contain(CidrNotationIpPrefix("208.68.36.0/22"))
-        })
+        }.await(1, FiniteDuration(2, TimeUnit.SECONDS))
       }
 
       "parse IP range" >> {
-        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must beRight(contain{ (network: Network) =>
+        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must contain{ (network: Network) =>
           network.ipRanges must contain(IpRangePrefix("208.68.36.1", "208.68.36.2"))
-        })
+        }.await(1, FiniteDuration(2, TimeUnit.SECONDS))
       }
 
       "parse multiple CIDR ranges" >> {
-        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must beRight(contain{ (network: Network) =>
+        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must contain{ (network: Network) =>
           network.ipRanges must contain(CidrNotationIpPrefix("208.68.36.0/23"))
-        })
+        }.await(1, FiniteDuration(2, TimeUnit.SECONDS))
       }
 
       "parse multiple IP ranges" >> {
-        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must beRight(contain{ (network: Network) =>
+        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must contain{ (network: Network) =>
           network.ipRanges must contain(IpRangePrefix("208.68.36.3", "208.68.36.4"))
-        })
+        }.await(1, FiniteDuration(2, TimeUnit.SECONDS))
       }
 
       "not mix up to and from address in IP ranges" >> {
-        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must beRight(contain{ (network: Network) =>
+        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must contain{ (network: Network) =>
           network.ipRanges must not contain(IpRangePrefix("208.68.36.1", "208.68.36.4"))
-        })
+        }.await(1, FiniteDuration(2, TimeUnit.SECONDS))
       }
 
       "parse root CIDR range" >> {
-        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must beRight(contain{ (network: Network) =>
+        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must contain{ (network: Network) =>
           network.ipRanges must contain(CidrNotationIpPrefix("198.199.64.0/18"))
-        })
+        }.await(1, FiniteDuration(2, TimeUnit.SECONDS))
       }
 
       "parse deeply nested CIDR range" >> {
-        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must beRight(contain{ (network: Network) =>
+        parseNetwork(new ByteArrayInputStream(microdata.getBytes)) must contain{ (network: Network) =>
           network.ipRanges must contain(CidrNotationIpPrefix("104.236.0.0/16"))
-        })
+        }.await(1, FiniteDuration(2, TimeUnit.SECONDS))
       }
     }
   }

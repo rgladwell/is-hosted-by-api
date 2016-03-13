@@ -5,9 +5,10 @@
 package me.gladwell.aws
 
 import java.io.InputStream
+import scala.concurrent.{ExecutionContext, Future}
 
 trait NetworkParser {
 
-  def parseNetwork(input: InputStream): Either[Exception, Seq[Network]]
+  def parseNetwork(input: InputStream)(implicit context: ExecutionContext): Future[Seq[Network]]
 
 }
