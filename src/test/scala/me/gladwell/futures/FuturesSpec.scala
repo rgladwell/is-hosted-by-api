@@ -1,4 +1,4 @@
-// Copyright 2015 Ricardo Gladwell.
+// Copyright 2015-2016 Ricardo Gladwell.
 // Licensed under the GNU Affero General Public License.
 // See the LICENSE file for more information.
 
@@ -7,7 +7,7 @@ package me.gladwell.futures
 import org.specs2.mutable.Specification
 import scala.concurrent._
 import org.specs2.matcher.FutureMatchers
-import me.gladwell.aws.test.Eventually
+import com.is_hosted_by.api.test.Eventually
 
 object FuturesSpec extends Specification with FutureMatchers with Eventually {
 

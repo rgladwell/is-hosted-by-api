@@ -6,7 +6,7 @@ import com.typesafe.sbt.SbtStartScript
 
 organization := "gladwell.me"
 
-name := "is-aws-api"
+name := "is-hosted-by-api"
 
 version := "1.0.0-SNAPSHOT"
 
