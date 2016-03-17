@@ -13,7 +13,9 @@ trait MicrodataNetworks extends Networks with Logging {
 
   private def microdataNetworks()(implicit executor: ExecutionContext): Future[Seq[Network]] = {
     log.info(s"downloading microdata IP ranges from url=[$ipRangeLocation]")
-    parseNetwork(ipRangeLocation.toURL.openStream)
+    val connection = ipRangeLocation.toURL.openConnection
+    connection.addRequestProperty("User-Agent", "is-hosted-by/1.0")
+    parseNetwork(connection.getInputStream)
   }
 
   override def networks()(implicit executor: ExecutionContext) =

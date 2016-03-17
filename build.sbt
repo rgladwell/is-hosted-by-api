@@ -24,7 +24,8 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.2",
   "com.chuusai" %% "shapeless" % "2.3.0",
   "net.databinder" %% "unfiltered-specs2" % "0.8.4" % "test",
-  "net.databinder" %% "dispatch-tagsoup" % "0.8.10" % "test"
+  "net.databinder" %% "dispatch-tagsoup" % "0.8.10" % "test",
+  "com.xebialabs.restito" % "restito" % "0.8" % "test"
 )
 
 seq(SbtStartScript.startScriptForClassesSettings: _*)
