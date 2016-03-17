@@ -50,7 +50,7 @@ To deploy on a [Dokku](https://github.com/progrium/dokku) instance execute the f
 git remote add dokku dokku@<ADDRESS>:is-hosted-by-api
 git push dokku master
 ssh dokku@<ADDRESS> 'config:set is-hosted-by-api AWS_IPRANGE_LOCATION=https://ip-ranges.amazonaws.com/ip-ranges.json'
-ssh dokku@<ADDRESS> 'config:set is-hosted-by-api IS_HOSTED_BY_ASSETS_LOCATION=http://assets.is-hosted-by.com'
+ssh dokku@<ADDRESS> 'config:set is-hosted-by-api IS_HOSTED_BY_ASSETS_LOCATION=https://is-hosted-by-assets.firebaseapp.com/'
 ssh dokku@<ADDRESS> 'config:set is-hosted-by-api  IPRANGES_LOCATION=https://ip-ranges.is-hosted-by.com/'
 ssh dokku@46.101.18.84 'domains:add is-hosted-by-api is-hosted-by.com'
 ```

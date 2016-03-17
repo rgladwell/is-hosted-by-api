@@ -1,7 +1,7 @@
 language: scala
 
 env:
-  - AWS_IPRANGE_LOCATION=https://ip-ranges.amazonaws.com/ip-ranges.json IS_HOSTED_BY_ASSETS_LOCATION=https://assets.is-hosted-by.com/ IPRANGES_LOCATION=https://ip-ranges.is-hosted-by.com/
+  - AWS_IPRANGE_LOCATION=https://ip-ranges.amazonaws.com/ip-ranges.json IS_HOSTED_BY_ASSETS_LOCATION=https://is-hosted-by-assets.firebaseapp.com IPRANGES_LOCATION=https://ip-ranges.is-hosted-by.com/
 
 script:
   - sbt test
