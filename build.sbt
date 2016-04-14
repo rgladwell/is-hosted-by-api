@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
   "net.databinder" %% "unfiltered-netty-server" % "0.8.4",
   "org.json4s" %% "json4s-native" % "3.2.11",
   "net.ripe.commons" % "commons-ip-math" % "1.21.1",
-  "me.gladwell.microtesia" %% "microtesia" % "0.2",
+  "me.gladwell.microtesia" %% "microtesia" % "0.3",
   "me.gladwell.urimplicit" %% "urimplicit" % "0.2",
   "org.slf4s" %% "slf4s-api" % "1.7.7",
   "ch.qos.logback" % "logback-classic" % "1.1.2",

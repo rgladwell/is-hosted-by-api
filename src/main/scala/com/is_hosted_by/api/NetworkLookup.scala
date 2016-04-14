@@ -4,4 +4,9 @@
 
 package com.is_hosted_by.api
 
-case class NetworkLookup(host: String, network: Option[String] = None, hosted: Boolean = false, validation: Option[InvalidInput] = None)
+case class NetworkLookup(
+  host: String,
+  network: Option[String] = None,
+  hosted: Boolean = false,
+  validation: Option[InvalidInput] = None
+)

@@ -6,7 +6,7 @@ package com.is_hosted_by.api
 
 import unfiltered.response.Html5
 import scala.xml.NodeSeq
-import java.net.URI
+import urimplicit._
 import net._
 
 trait HtmlViews extends Views {
@@ -17,7 +17,7 @@ trait HtmlViews extends Views {
   val favicon               = assetsLocation + "/images/icon-fav.png"
   val stylesheet            = assetsLocation + "/style.min.css"
 
-  private def html5Template(title: String, body: NodeSeq, format: String) = Html5 {
+  private def html5Template(title: String, body: NodeSeq) = Html5 {
     <html lang="en">
       <head>
         <meta charset="utf-8" />
@@ -36,8 +36,8 @@ trait HtmlViews extends Views {
         <assets-header></assets-header>
 
         <main role="main">
-          <div class={format}>
-          {body}
+          <div>
+            {body}
           </div>
         </main>
 
@@ -56,9 +56,8 @@ trait HtmlViews extends Views {
       </header>
 
       <form method="get" action="./" data-rel="next">
-        <input type="text" name="address" placeholder="Address, host or URL (i.e. cnn.com)" />
-      </form>,
-      format = "h-index"
+        <input type="text" name="address" placeholder="Address, host or URL (i.e. cnn.com)" value="" />
+      </form>
     )
   }
 
@@ -70,29 +69,40 @@ trait HtmlViews extends Views {
 
   override def resultView(query: String, result: NetworkLookup) = {
 
-    val yesno = if(result.hosted) "Yes" else "No"
-    val not = if(result.hosted) "" else " not"
+    val description = result.network match {
+      case Some(network) => s"${result.host} is on $network"
+      case _ => s"${result.host} is not hosted any known provider"
+    }
+
+    val not = if (!result.hosted) "not" else ""
 
     html5Template(
-      title = s"Is ${result.host} hosted on Amazon? $yesno",
-      <h1>
-        <data class="p-is-hosted" value={result.hosted.toString}>{yesno}</data>,
-        <data class="p-host">{result.host}</data>
-        is{not} hosted by <data class="p-network">{result.network.getOrElse("any network")}</data>.
-      </h1>
+      title = description,
+      <div itemscope="" itemtype="http://schema.org/SearchAction">
+        <header itemscope="" itemprop="result" itemtype="http://schema.org/Thing">
+          <h1 itemprop="description">
+            <span itemprop="host">{result.host}</span>
+            is {not} hosted by <span itemprop="network">{result.network.getOrElse("any known provider")}</span>
+          </h1>
+        </header>
+      </div>
       ++ {validationMessage(result.validation)} ++
       <form method="get" action="./" data-rel="next">
         <input type="text" name="address" placeholder="Address, host or URL (i.e. cnn.com)" value={query} />
-      </form>,
-      format = "h-network-lookup"
+      </form>
     )
   }
 
   override def errorView(error: Exception) = {
     html5Template(
       title = "Is this hosted on Amazon? - Error",
-      <h1>There was a problem looking up your address, please try again later.</h1>,
-      format = "h-error"
+      <div itemscope="" itemtype="http://schema.org/SearchAction">
+        <header itemscope="" itemprop="error" itemtype="http://schema.org/Thing">
+          <h1 itemprop="description">
+            There was a problem looking up your address, please try again later..
+          </h1>
+        </header>
+      </div>
     )
   }
 

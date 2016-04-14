@@ -10,14 +10,16 @@ import scala.xml.XML
 import org.specs2.matcher.XmlMatchers
 import org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl
 import java.io.ByteArrayOutputStream
-import java.net.URI
 import test._
+import microtesia._
+import urimplicit._
+import scala.util.{Failure, Success}
 
 object HtmlViewsSpec extends Specification with XmlMatchers with MockUnfilitered {
 
   trait TestHtmlViews extends HtmlViews with TestConfiguration with Scope {
 
-    def html(view: View) = {
+    def body(view: View) = {
       val response = mockResponse()
       view(response)
 
@@ -26,11 +28,18 @@ object HtmlViewsSpec extends Specification with XmlMatchers with MockUnfilitered
         case _ => throw new ClassCastException
       }
 
-      val body = new String(buffer.toByteArray)
-      val parser = XML.withSAXParser(new SAXFactoryImpl().newSAXParser())
-      parser.loadString(body)
+      new String(buffer.toByteArray)
     }
 
+    def html(view: View) = {
+      val parser = XML.withSAXParser(new SAXFactoryImpl().newSAXParser())
+      parser.loadString(body(view))
+    }
+
+    def microdata(view: View): MicrodataDocument = parseMicrodata(body(view)) match {
+      case Success(md) => md
+      case Failure(e) => throw e;
+    }
   }
 
   "The index view" should {
@@ -67,20 +76,38 @@ object HtmlViewsSpec extends Specification with XmlMatchers with MockUnfilitered
       there was one(response).header("Content-Type", "text/html; charset=utf-8")
     }
 
-    "return a result" in new TestHtmlViews {
-      html(resultView("http://example.org", lookup)) must \\ ("div", "class" -> "h-network-lookup")
+    "return microdata" in new TestHtmlViews {
+      microdata(resultView("http://example.org", lookup)).rootItems must not be empty
     }
 
-    "return whether address is hosted on network" in new TestHtmlViews {
-      html(resultView("http://example.org", lookup)) must \\ ("data", "class" -> "p-is-hosted", "value" -> "true")
+    "return search action" in new TestHtmlViews {
+      microdata(resultView("http://example.org", lookup)).rootItems(URI("http://schema.org/SearchAction")) must not be empty
     }
 
     "return hosted network" in new TestHtmlViews {
-      html(resultView("http://example.org", lookup)) must \\ ("data", "class" -> "p-network")  \> "Amazon"
+      val result = microdata(resultView("http://example.org", lookup)).rootItems(URI("http://schema.org/SearchAction")).head
+      result("network") must be contain(MicrodataString("Amazon"))
+      result("result").head must beLike { case item: MicrodataItem => item("network") must contain(MicrodataString("Amazon")) }
+   }
+
+    "return host looked up"  in new TestHtmlViews {
+      val result = microdata(resultView("http://example.org", lookup)).rootItems(URI("http://schema.org/SearchAction")).head
+      result("result").head must beLike { case item: MicrodataItem => item("host") must contain(MicrodataString("example.org")) }
     }
 
-    "return host looked up" in new TestHtmlViews {
-      html(resultView("http://example.org", lookup)) must \\ ("data", "class" -> "p-host") \> "example.org"
+    "return result" in new TestHtmlViews {
+      val result = microdata(resultView("http://example.org", lookup)).rootItems(URI("http://schema.org/SearchAction")).head
+      result("result") must not be empty
+    }
+
+    "return an result with type `Thing`" in new TestHtmlViews {
+      val result = microdata(resultView("http://example.org", lookup)).rootItems(URI("http://schema.org/SearchAction")).head
+      result("result").head must beLike { case item: MicrodataItem => item.itemtype must beSome(URI("http://schema.org/Thing")) }
+    }
+
+    "return result description" in new TestHtmlViews {
+      val result = microdata(resultView("http://example.org", lookup)).rootItems(URI("http://schema.org/SearchAction")).head
+      result("result").head must beLike { case item: MicrodataItem => item("description") must not be empty }
     }
 
     "return link to remote hosted assets" in new TestHtmlViews {
@@ -117,8 +144,26 @@ object HtmlViewsSpec extends Specification with XmlMatchers with MockUnfilitered
       there was one(response).header("Content-Type", "text/html; charset=utf-8")
     }
 
-    "return an error message" in new TestHtmlViews {
-      html(errorView(new Exception(""))) must \\("div", "class" -> "h-error")
+    "return microdata" in new TestHtmlViews {
+      microdata(errorView(new Exception(""))).rootItems must not be empty
+    }
+
+    "return search action" in new TestHtmlViews {
+      microdata(errorView(new Exception(""))).rootItems(URI("http://schema.org/SearchAction")) must not be empty
+    }
+
+    "return an error" in new TestHtmlViews {
+      microdata(errorView(new Exception(""))).rootItems(URI("http://schema.org/SearchAction")).head("error") must not be empty
+    }
+
+    "return an error with type `Thing`" in new TestHtmlViews {
+      val result = microdata(errorView(new Exception(""))).rootItems(URI("http://schema.org/SearchAction")).head
+      result("error").head must beLike { case item: MicrodataItem => item.itemtype must beSome(URI("http://schema.org/Thing")) }
+    }
+
+    "return error description" in new TestHtmlViews {
+      val result = microdata(errorView(new Exception(""))).rootItems(URI("http://schema.org/SearchAction")).head
+      result("error").head must beLike { case item: MicrodataItem => item("description") must not be empty }
     }
 
     "return link to remote hosted assets" in new TestHtmlViews {
