@@ -44,7 +44,7 @@ sbt test
 
 ## Deployment
 
-To deploy on a [Dokku](https://github.com/progrium/dokku) instance execute the following:
+To deploy on a [Dokku](https://github.com/dokku/dokku) instance execute the following:
 
 ```sh
 git remote add dokku dokku@<ADDRESS>:is-hosted-by-api
