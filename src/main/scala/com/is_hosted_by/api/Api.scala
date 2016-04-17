@@ -46,7 +46,7 @@ class Api extends unfiltered.netty.future.Plan with Logging with ServerErrorResp
                   }
 
     future onFailure {
-      case error : Exception =>log.error(s"Failed to perform network lookup for host=[$host", error)
+      case error : Exception =>log.error(s"Failed to perform network lookup for host=[$host]", error)
     }
 
     future recover {
