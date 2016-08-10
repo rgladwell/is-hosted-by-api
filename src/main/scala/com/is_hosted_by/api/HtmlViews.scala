@@ -49,10 +49,10 @@ trait HtmlViews extends Views {
 
   override val index = {
     html5Template(
-      title = "Is this hosted on Amazon?",
+      title = "Is Hosted By?",
       <header>
         <h1>Enter address:</h1>
-        <p>Enter the address, URL or host to check if it's hosted by Amazon:</p>
+        <p>Enter an address, URL or host to find out it's cloud hosting provider:</p>
       </header>
 
       <form method="get" action="./" data-rel="next">
