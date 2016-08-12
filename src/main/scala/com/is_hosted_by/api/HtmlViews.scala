@@ -52,7 +52,7 @@ trait HtmlViews extends Views {
       title = "Is Hosted By?",
       <header>
         <h1>Enter address:</h1>
-        <p>Enter an address, URL or host to find out it's cloud hosting provider:</p>
+        <p>Enter an address, URL or host to find out its cloud hosting provider:</p>
       </header>
 
       <form method="get" action="./" data-rel="next">
